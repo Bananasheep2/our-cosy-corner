@@ -38,7 +38,9 @@ export default function DownloadPage() {
           <a className="dl-row" href={encodeURI(DL_WIN)}>
             <div>
               <strong>Windows 10/11</strong>
-              <small>~96 MB · installer · version {WIN_VERSION} — {APP_VERSION} lands shortly</small>
+              {/* Only call out a version gap when one actually exists — the
+                  Windows build can briefly trail macOS between releases. */}
+              <small>~96 MB · installer{WIN_VERSION !== APP_VERSION ? ` · version ${WIN_VERSION} — ${APP_VERSION} lands shortly` : ""}</small>
             </div>
             <span className="button small">Download <b>→</b></span>
           </a>
