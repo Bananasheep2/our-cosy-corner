@@ -1,0 +1,47 @@
+# Builds the Windows installer for Our Cosy Corner.
+#
+# Why this exists: the Windows target is NSIS, which electron-builder can only
+# produce on Windows (or via Wine, which is deprecated on macOS and needs a
+# sudo-installed dependency). Building on a real windows-latest runner avoids
+# both problems and is reproducible.
+#
+# Run it from the Actions tab ("Run workflow"), or by pushing a v* tag.
+# The installer is attached to the run as a downloadable artifact.
+name: Build Windows installer
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        working-directory: our-cosy-corner
+        # npm ci needs the lockfile to be in sync; fall back to install if not.
+        run: npm ci || npm install
+
+      - name: Build the NSIS installer
+        working-directory: our-cosy-corner
+        # --publish never: this workflow only produces the artifact. Uploading
+        # to R2 and updating the download page stays a deliberate manual step.
+        run: npx electron-builder --win --publish never
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            our-cosy-corner/dist/*.exe
+            our-cosy-corner/dist/*.exe.blockmap
+            our-cosy-corner/dist/latest.yml

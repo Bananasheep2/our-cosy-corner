@@ -1,0 +1,54 @@
+/* themes.css — fallback CSS variables (used before themes.js runs) plus the
+   subtle paper texture and small per-theme flourishes. themes.js overrides
+   these variables inline on <html> to switch presets and customisations. */
+
+:root {
+  --bg: #edede9;
+  --bg-2: #e3d5ca;
+  --panel: #faf6f2;
+  --panel-2: #f5ebe0;
+  --ink: #2e2823;
+  --ink-soft: #5f5044;
+  --accent: #7b4b33;
+  --accent-ink: #faf6f2;
+  --accent-soft: #d5bdaf;
+  --line: #d6ccc2;
+  --font-head: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --radius: 12px;
+}
+
+/* Soft paper texture — a barely-there dotted weave, drawn in CSS so it needs
+   no image asset. Toggled on by body.has-paper (Parchment is now the default paper theme). */
+body.has-paper {
+  background-image:
+    radial-gradient(rgba(120, 90, 60, 0.05) 1px, transparent 1px),
+    radial-gradient(rgba(120, 90, 60, 0.04) 1px, transparent 1px);
+  background-size: 22px 22px, 22px 22px;
+  background-position: 0 0, 11px 11px;
+}
+
+/* Frosted Petal — extra pillowy shadows */
+html[data-theme="frosted-petal"] .section,
+html[data-theme="frosted-petal"] .onboard-card,
+html[data-theme="frosted-petal"] .welcome-card { box-shadow: 0 22px 46px -26px rgba(123, 223, 242, 0.5); }
+
+/* Cherry Blossom — pillowy rose shadows */
+html[data-theme="cherry-blossom"] .section,
+html[data-theme="cherry-blossom"] .onboard-card,
+html[data-theme="cherry-blossom"] .welcome-card { box-shadow: 0 22px 46px -26px rgba(251, 111, 146, 0.4); }
+
+/* Velvet Night — dark mode niceties */
+html[data-theme="velvet-night"] .avatar { border-color: var(--panel-2); }
+html[data-theme="velvet-night"] .sticky-note { color: #3a2f2a; }
+html[data-theme="velvet-night"] .toast { background: var(--accent); color: var(--accent-ink); }
+html[data-theme="velvet-night"] input[type="date"] { color-scheme: dark; }
+
+/* Gentle focus ring everywhere */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Scrollbar cosiness */
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb { background: var(--accent-soft); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); background-clip: content-box; }
+::-webkit-scrollbar-track { background: transparent; }

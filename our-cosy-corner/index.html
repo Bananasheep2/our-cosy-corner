@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="parchment">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; object-src 'self' blob:; frame-src 'self' blob:;" />
+  <title>Our Cosy Corner</title>
+
+  <!-- Cosy fonts — self-hosted (latin subset) so the app has no external
+       font dependency and the CSP can drop the Google Fonts allowances. -->
+  <style>
+    @font-face { font-family: 'Caveat'; font-style: normal; font-weight: 400; font-display: swap; src: url('assets/fonts/caveat-latin.woff2') format('woff2'); }
+    @font-face { font-family: 'Caveat'; font-style: normal; font-weight: 600; font-display: swap; src: url('assets/fonts/caveat-latin.woff2') format('woff2'); }
+    /* EB Garamond (reading text) + IBM Plex Sans (headings/UI) are variable
+       fonts, so one file covers the whole weight range per style. */
+    @font-face { font-family: 'EB Garamond'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('assets/fonts/ebgaramond-latin.woff2') format('woff2'); }
+    @font-face { font-family: 'EB Garamond'; font-style: italic; font-weight: 400 700; font-display: swap; src: url('assets/fonts/ebgaramond-italic-latin.woff2') format('woff2'); }
+    @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('assets/fonts/ibmplexsans-latin.woff2') format('woff2'); }
+    @font-face { font-family: 'Patrick Hand'; font-style: normal; font-weight: 400; font-display: swap; src: url('assets/fonts/patrick-hand-latin.woff2') format('woff2'); }
+
+    /* modest text-style button for the "restore a corner from a backup"
+       onboard link — styled to sit quietly below the two main options,
+       mirrors the subtlety of .gender-skip in css/styles.css. */
+    .linklike {
+      display: block; margin: 14px auto 0; background: transparent; border: none;
+      color: var(--ink-soft); font-size: 13px; text-decoration: underline;
+      padding: 4px 8px; cursor: pointer; transition: color .15s;
+    }
+    .linklike:hover { color: var(--ink); }
+  </style>
+
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/themes.css" />
+</head>
+<body class="has-paper">
+
+  <!-- draggable titlebar strip for macOS hiddenInset -->
+  <div class="titlebar-drag"></div>
+
+  <!-- Local-mode banner -->
+  <div id="local-banner" class="local-banner" hidden>
+    <span>Running in local mode — connect to the cloud to sync with everyone</span>
+    <a href="SETUP.md" id="banner-setup">setup guide</a>
+    <button id="banner-dismiss" title="dismiss" aria-label="dismiss banner">✕</button>
+  </div>
+
+  <!-- ============ WELCOME / SIGN IN ============ -->
+  <section id="screen-welcome" class="screen center-screen">
+    <div class="welcome-scene" aria-hidden="true">
+      <i class="scene-glow glow-a"></i><i class="scene-glow glow-b"></i>
+      <span class="drift d1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" aria-hidden="true"><path d="M12 3c.7 3.6 2.2 6.1 5.4 7.2-3.2 1.1-4.7 3.6-5.4 7.2-.7-3.6-2.2-6.1-5.4-7.2 3.2-1.1 4.7-3.6 5.4-7.2Z"/></svg></span><span class="drift d2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" aria-hidden="true"><path d="M12 3c.7 3.6 2.2 6.1 5.4 7.2-3.2 1.1-4.7 3.6-5.4 7.2-.7-3.6-2.2-6.1-5.4-7.2 3.2-1.1 4.7-3.6 5.4-7.2Z"/></svg></span><span class="drift d3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" aria-hidden="true"><path d="M12 3c.7 3.6 2.2 6.1 5.4 7.2-3.2 1.1-4.7 3.6-5.4 7.2-.7-3.6-2.2-6.1-5.4-7.2 3.2-1.1 4.7-3.6 5.4-7.2Z"/></svg></span><span class="drift d4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" aria-hidden="true"><path d="M12 3c.7 3.6 2.2 6.1 5.4 7.2-3.2 1.1-4.7 3.6-5.4 7.2-.7-3.6-2.2-6.1-5.4-7.2 3.2-1.1 4.7-3.6 5.4-7.2Z"/></svg></span><span class="drift d5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" aria-hidden="true"><path d="M12 3c.7 3.6 2.2 6.1 5.4 7.2-3.2 1.1-4.7 3.6-5.4 7.2-.7-3.6-2.2-6.1-5.4-7.2 3.2-1.1 4.7-3.6 5.4-7.2Z"/></svg></span>
+    </div>
+    <div class="welcome-card">
+      <div class="welcome-emblem"><span class="emblem-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="34" height="34" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg></span></div>
+      <h1 class="welcome-title">Our Cosy Corner</h1>
+      <p class="welcome-sub">a cosy little home on the internet — for the people who matter.</p>
+      <div class="welcome-divider" aria-hidden="true"></div>
+      <div id="local-name-row" class="field-row">
+        <label>What should we call you?</label>
+        <input id="local-name" type="text" placeholder="your name" maxlength="24" />
+      </div>
+      <button id="btn-signin" class="btn-signin">
+        <svg class="g-logo" aria-hidden="true" viewBox="0 0 18 18" width="18" height="18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92a8.78 8.78 0 0 0 2.68-6.62z"/><path fill="#34A853" d="M9 18a8.6 8.6 0 0 0 5.96-2.18l-2.92-2.26a5.4 5.4 0 0 1-8.09-2.85H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.71a5.4 5.4 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l2.99-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59A9 9 0 0 0 .96 4.96l2.99 2.33A5.36 5.36 0 0 1 9 3.58z"/></svg>
+        <span id="btn-signin-label">Step inside</span>
+      </button>
+
+      <!-- ============ EMAIL AUTH (cloud mode only) ============ -->
+      <div id="email-auth-wrap" class="email-auth-wrap">
+        <div class="or-divider"><span>or</span></div>
+
+        <div class="auth-tabs" role="tablist" aria-label="sign in with email">
+          <button type="button" id="tab-signin" class="auth-tab selected" role="tab" aria-selected="true" aria-controls="panel-signin">Sign in</button>
+          <button type="button" id="tab-signup" class="auth-tab" role="tab" aria-selected="false" aria-controls="panel-signup">Create account</button>
+        </div>
+
+        <!-- Sign in -->
+        <div id="panel-signin" class="auth-panel" role="tabpanel" aria-labelledby="tab-signin">
+          <div class="field-row">
+            <label for="signin-email">Email</label>
+            <input id="signin-email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" />
+            <p class="field-error" id="signin-email-error" hidden></p>
+          </div>
+          <div class="field-row">
+            <label for="signin-password">Password</label>
+            <div class="password-field">
+              <input id="signin-password" type="password" autocomplete="current-password" placeholder="your password" />
+              <button type="button" class="pw-toggle" data-target="signin-password" aria-label="show password" aria-pressed="false">show</button>
+            </div>
+            <p class="field-error" id="signin-password-error" hidden></p>
+          </div>
+          <div class="auth-forgot-row">
+            <button type="button" id="btn-forgot-password" class="auth-forgot">Forgot password?</button>
+          </div>
+          <button type="button" id="btn-email-signin" class="btn-primary auth-submit">Sign in</button>
+          <p class="auth-note" id="signin-note" hidden></p>
+        </div>
+
+        <!-- Create account -->
+        <div id="panel-signup" class="auth-panel" hidden role="tabpanel" aria-labelledby="tab-signup">
+          <div class="field-row">
+            <label for="signup-name">Name</label>
+            <input id="signup-name" type="text" autocomplete="name" placeholder="your name" maxlength="24" />
+          </div>
+          <div class="field-row">
+            <label for="signup-email">Email</label>
+            <input id="signup-email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" />
+            <p class="field-error" id="signup-email-error" hidden></p>
+          </div>
+          <div class="field-row">
+            <label for="signup-password">Password</label>
+            <div class="password-field">
+              <input id="signup-password" type="password" autocomplete="new-password" placeholder="at least 8 characters" />
+              <button type="button" class="pw-toggle" data-target="signup-password" aria-label="show password" aria-pressed="false">show</button>
+            </div>
+            <p class="field-error" id="signup-password-error" hidden></p>
+          </div>
+          <button type="button" id="btn-email-signup" class="btn-primary auth-submit">Create account</button>
+          <p class="auth-note" id="signup-note" hidden></p>
+        </div>
+
+        <!-- Forgot password -->
+        <div id="panel-forgot" class="auth-panel" hidden role="tabpanel" aria-label="reset your password">
+          <p class="auth-blurb">We'll email you a link to set a new password.</p>
+          <div class="field-row">
+            <label for="forgot-email">Email</label>
+            <input id="forgot-email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" />
+            <p class="field-error" id="forgot-email-error" hidden></p>
+          </div>
+          <button type="button" id="btn-send-reset" class="btn-primary auth-submit">Send reset link</button>
+          <button type="button" id="btn-forgot-back" class="linklike">Back</button>
+          <p class="auth-note" id="forgot-note" hidden></p>
+        </div>
+      </div>
+
+      <p class="welcome-reassure">just your name, email and photo — nothing else</p>
+      <p class="welcome-foot">Everything saves on this computer until you connect to the cloud.</p>
+    </div>
+  </section>
+
+  <!-- ============ ONBOARD: CREATE / JOIN ============ -->
+  <section id="screen-onboard" class="screen center-screen" hidden>
+    <div class="onboard-wrap">
+      <div id="recent-corners" class="recent-corners" hidden></div>
+      <h2 class="onboard-title">Make your corner</h2>
+      <div class="onboard-cards">
+        <div class="onboard-card">
+          <div id="create-emblem" class="oc-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" aria-hidden="true"><path d="M12 3c.7 3.6 2.2 6.1 5.4 7.2-3.2 1.1-4.7 3.6-5.4 7.2-.7-3.6-2.2-6.1-5.4-7.2 3.2-1.1 4.7-3.6 5.4-7.2Z"/></svg></div>
+          <h3>Start a new corner</h3>
+          <p id="create-blurb">Create your shared space and invite your partner.</p>
+
+          <div id="kind-picker" class="kind-picker" role="radiogroup" aria-label="corner type"></div>
+
+          <div id="capacity-stepper" class="capacity-stepper" hidden>
+            <label id="capacity-label" for="capacity-value">how many of you?</label>
+            <div class="stepper-row">
+              <button type="button" id="capacity-minus" class="stepper-btn" aria-label="fewer people">−</button>
+              <span id="capacity-value" class="stepper-value" aria-live="polite">4</span>
+              <button type="button" id="capacity-plus" class="stepper-btn" aria-label="more people">＋</button>
+            </div>
+          </div>
+
+          <input id="create-name" type="text" placeholder="name your corner…" maxlength="40" />
+          <button id="btn-create" class="btn-primary">Create our corner</button>
+        </div>
+        <div class="onboard-or">or</div>
+        <div class="onboard-card">
+          <div class="oc-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+          <h3>Join a corner</h3>
+          <p>Got a 6-character invite code? Pop it in here.</p>
+          <input id="join-code" type="text" placeholder="ABC123" maxlength="6" class="code-input" />
+          <button id="btn-join" class="btn-secondary">Join corner</button>
+        </div>
+      </div>
+      <button id="btn-restore" class="linklike">restore a corner from a backup file</button>
+    </div>
+  </section>
+
+  <!-- ============ GENDER / PRONOUNS (Round 6) ============ -->
+  <section id="screen-gender" class="screen center-screen" hidden>
+    <div class="gender-card">
+      <h2 class="gender-title">a little about you</h2>
+      <p class="gender-sub">so your corner knows how to speak about you — you can change this any time</p>
+      <div class="gender-options">
+        <button type="button" class="gender-opt" data-gender="male" aria-label="he / him — male">
+          <div class="go-label">he / him</div>
+        </button>
+        <button type="button" class="gender-opt" data-gender="female" aria-label="she / her — female">
+          <div class="go-label">she / her</div>
+        </button>
+        <button type="button" class="gender-opt" data-gender="nonbinary" aria-label="they / them — non-binary">
+          <div class="go-label">they / them</div>
+        </button>
+      </div>
+      <button type="button" id="btn-gender-skip" class="gender-skip">skip for now</button>
+    </div>
+  </section>
+
+  <!-- ============ BOARD ============ -->
+  <section id="screen-board" class="screen" hidden>
+    <header class="cosy-header">
+      <div class="header-left">
+        <div class="header-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg></div>
+        <h1 id="space-name" class="space-name" contenteditable="true" spellcheck="false">Our Cosy Corner</h1>
+        <div id="invite-row" class="invite-row">
+          <span class="invite-label">invite code</span>
+          <span id="invite-code" class="invite-code">——————</span>
+          <button id="btn-copy-code" class="mini-btn" title="copy code" aria-label="copy invite code">copy</button>
+        </div>
+      </div>
+      <div id="dashboard-cards" class="dashboard-cards"></div>
+      <div class="header-right">
+        <div id="save-chip" class="save-chip" aria-live="polite">all cosy</div>
+        <div id="connection-chip" class="save-chip" aria-live="polite" hidden></div>
+        <div id="avatars" class="avatars"></div>
+        <button id="btn-theme" class="round-btn" title="themes" aria-label="themes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="M12 21a9 9 0 1 1 0-18c4.5 0 8.5 3.3 8.5 7.3 0 2-1.5 3.2-3.3 3.2h-1.6c-1 0-1.7.9-1.4 1.8.4 1.1-.5 2.2-1.6 1.9A9 9 0 0 1 12 21Z"/><circle cx="8" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="11.5" cy="7.5" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="9.5" r="1" fill="currentColor" stroke="none"/></svg></button>
+        <button id="btn-settings" class="round-btn" title="settings" aria-label="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.14.6.6 1.02 1.19 1.19H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button>
+        <button id="btn-leave" class="round-btn" title="back to your corners" aria-label="back to your corners"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="M9 21V4.6c0-.6.4-1.1 1-1.3l6-1.6a1 1 0 0 1 1.3 1v18.3"/><path d="M4 21h16"/><circle cx="13.2" cy="12" r="0.9" fill="currentColor" stroke="none"/></svg></button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <!-- ============ SIDEBAR: page tree ============ -->
+      <nav id="sidebar" class="sidebar">
+        <div class="sidebar-head">
+          <button id="btn-sidebar-toggle" class="sidebar-toggle" title="collapse sidebar" aria-label="collapse sidebar">☰</button>
+          <span id="sidebar-space-name" class="sidebar-space-name">Our Cosy Corner</span>
+        </div>
+        <button id="btn-find-page" class="find-page-btn" aria-label="find a page (Cmd+K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.3-4.3"/></svg> find a page</button>
+        <div id="page-tree" class="page-tree" role="tree"></div>
+        <button id="btn-new-root-page" class="new-page-btn">＋ New page</button>
+        <button id="btn-trash" class="trash-btn" hidden aria-label="trash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg><span id="btn-trash-label">trash (0)</span></button>
+      </nav>
+      <button id="btn-sidebar-open" class="sidebar-open-btn" title="open sidebar" aria-label="open sidebar" hidden>☰</button>
+
+      <!-- ============ CONTENT: current page ============ -->
+      <main id="page-view" class="page-view">
+        <div id="breadcrumbs" class="breadcrumbs"></div>
+
+        <div class="page-head">
+          <button id="page-icon-btn" class="page-icon-btn" title="change icon" aria-label="change page icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg></button>
+          <h1 id="page-title" class="page-title" contenteditable="true" spellcheck="false">Home</h1>
+          <button id="page-visibility-btn" class="page-visibility-btn" hidden></button>
+        </div>
+
+        <div id="subpage-chips" class="subpage-chips"></div>
+
+        <div id="block-list" class="block-list"></div>
+        <div class="block-toolbar">
+          <button id="btn-add-block" class="add-block" title="add a block" aria-label="add a block">＋ add a block</button>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- ============ QUICK SWITCHER (Cmd+K) ============ -->
+  <div id="switcher-overlay" class="switcher-overlay" hidden>
+    <div class="switcher-backdrop"></div>
+    <div id="switcher-dialog" class="switcher-dialog" role="dialog" aria-modal="true" aria-label="find a page">
+      <input id="switcher-input" class="switcher-input" type="text" placeholder="find a page…" aria-label="find a page" aria-autocomplete="list" aria-controls="switcher-list" />
+      <div id="switcher-list" class="switcher-list" role="listbox"></div>
+    </div>
+  </div>
+
+  <!-- ============ THEME PANEL ============ -->
+  <aside id="theme-panel" class="theme-panel" role="dialog" aria-label="dress up your corner" hidden>
+    <div class="theme-head">
+      <h3>Dress up your corner</h3>
+      <button id="theme-close" class="mini-btn" aria-label="close theme panel">✕</button>
+    </div>
+    <div class="theme-section">
+      <label class="theme-heading">Cosy presets</label>
+      <div id="theme-presets" class="theme-presets"></div>
+    </div>
+    <div class="theme-section">
+      <label class="theme-heading">Make it yours</label>
+      <div class="cust-row"><span>Accent colour</span><input id="cust-accent" type="color" /></div>
+      <div class="cust-row"><span>Background</span><input id="cust-bg" type="color" /></div>
+      <div class="cust-row"><span>Base font</span>
+        <select id="cust-font">
+          <option value="'IBM Plex Sans', system-ui, sans-serif">Clean (IBM Plex Sans)</option>
+          <option value="'EB Garamond', Georgia, serif">Classic (EB Garamond)</option>
+          <option value="'Caveat', cursive">Handwritten (Caveat)</option>
+          <option value="'Patrick Hand', cursive">Marker (Patrick Hand)</option>
+        </select>
+      </div>
+      <div class="cust-row"><span>Corner roundness</span><input id="cust-radius" type="range" min="4" max="30" /></div>
+      <button id="cust-reset" class="btn-secondary small">Reset customisations</button>
+    </div>
+  </aside>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- ============ Supabase JS SDK (only used when configured) ============ -->
+  <!-- Ships with `npm install @supabase/supabase-js` at the package root. If
+       missing or offline, window.supabase stays undefined and the app runs
+       in local mode. -->
+  <script src="node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
+
+  <!-- ============ App ============ -->
+  <script src="supabase-config.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/blocks.js"></script>
+  <script src="js/dragdrop.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

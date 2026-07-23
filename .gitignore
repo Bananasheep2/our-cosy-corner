@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output — installers are 100MB+ each and are published to R2, never git
+dist/
+.next/
+.wrangler/
+*.tsbuildinfo
+
+# Throwaway verification harnesses (regenerated on demand)
+our-cosy-corner/_test-index.html
+our-cosy-corner/_test-config-stub.js
+
+# Local/OS noise
+.DS_Store
+*.log
+.env
+.env.local
+
+# SECRETS — never commit these.
+# Google OAuth *client secret* downloads (unlike the Supabase anon key, which
+# is public by design and ships in the app, this one is a real credential).
+client_secret*.json
+**/client_secret*.json
+*.p12
+*.pem
+*.keystore

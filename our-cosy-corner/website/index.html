@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Cosy Corner — a shared space for two</title>
+<meta name="description" content="Our Cosy Corner is a cosy, Notion-style shared workspace built for exactly two people. Download for Mac or Windows.">
+<style>
+  :root {
+    --bg: #fefae0;
+    --green: #ccd5ae;
+    --cream: #e9edc9;
+    --bronze: #9c6b35;
+    --text: #4d3a22;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  h1, h2, h3 {
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  .wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  header.hero {
+    background: linear-gradient(180deg, var(--cream) 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--green);
+    padding: 64px 0 48px;
+    text-align: center;
+  }
+  header.hero h1 {
+    font-size: 2.4rem;
+    margin: 0 0 12px;
+  }
+  header.hero .tagline {
+    font-size: 1.15rem;
+    color: var(--bronze);
+    margin: 0 0 18px;
+    font-weight: 600;
+  }
+  header.hero p.desc {
+    max-width: 620px;
+    margin: 0 auto;
+    font-size: 1.02rem;
+  }
+  section {
+    padding: 48px 0;
+  }
+  section + section {
+    border-top: 1px solid var(--green);
+  }
+  h2 {
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+  }
+  .screens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  .screens figure {
+    margin: 0;
+    background: var(--cream);
+    border-radius: 16px;
+    padding: 12px;
+    flex: 1 1 220px;
+    max-width: 260px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(77, 58, 34, 0.08);
+  }
+  .screens img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    display: block;
+    background: var(--green);
+  }
+  .screens figcaption {
+    margin-top: 10px;
+    font-size: 0.88rem;
+    color: var(--bronze);
+  }
+  .downloads {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+  .btn {
+    display: block;
+    text-align: center;
+    background: var(--bronze);
+    color: var(--bg);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 1.02rem;
+    transition: opacity 0.15s ease;
+  }
+  .btn:hover {
+    opacity: 0.88;
+  }
+  .version-tag {
+    text-align: center;
+    color: var(--bronze);
+    font-size: 0.92rem;
+    margin-bottom: 20px;
+  }
+  .help-box {
+    background: var(--cream);
+    border: 1px solid var(--green);
+    border-radius: 16px;
+    padding: 28px 28px 8px;
+  }
+  .help-box h3 {
+    font-size: 1.1rem;
+    margin: 0 0 10px;
+  }
+  .help-item {
+    margin-bottom: 22px;
+  }
+  .help-item p, .help-item ol {
+    margin: 0 0 4px;
+  }
+  .help-item ol {
+    padding-left: 22px;
+  }
+  .help-item li {
+    margin-bottom: 4px;
+  }
+  code {
+    background: var(--bg);
+    border: 1px solid var(--green);
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 0.92em;
+  }
+  .note {
+    font-size: 0.95rem;
+    color: var(--text);
+    opacity: 0.85;
+  }
+  .release-notes ul {
+    padding-left: 20px;
+  }
+  .release-notes li {
+    margin-bottom: 8px;
+  }
+  footer {
+    background: var(--cream);
+    border-top: 1px solid var(--green);
+    padding: 32px 0;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+  footer a {
+    color: var(--bronze);
+    text-decoration: none;
+    margin: 0 10px;
+  }
+  footer a:hover {
+    text-decoration: underline;
+  }
+  footer .support {
+    margin-top: 12px;
+  }
+  footer .copyright {
+    margin-top: 16px;
+    opacity: 0.75;
+  }
+  @media (max-width: 480px) {
+    header.hero h1 { font-size: 1.9rem; }
+    header.hero { padding: 44px 0 36px; }
+    section { padding: 36px 0; }
+    .help-box { padding: 22px 18px 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Our Cosy Corner</h1>
+    <p class="tagline">A little corner of the internet, just for the two of you.</p>
+    <p class="desc">Our Cosy Corner is a warm, Notion-style shared workspace built for exactly two people. Sign in, invite your partner with a six-character code, and start planning together — pages, notes, to-dos, sliders, files, and bookmarks, all in one calm place.</p>
+  </div>
+</header>
+
+<section id="screenshots">
+  <div class="wrap">
+    <h2>Screenshots</h2>
+    <div class="screens">
+      <figure>
+        <img src="screenshots/board-terracotta.png" alt="Our Cosy Corner shown in the Meadow theme, a soft green board with pages and to-dos">
+        <figcaption>Meadow theme</figcaption>
+      </figure>
+      <figure>
+        <img src="screenshots/board-cherry-blossom.png" alt="Our Cosy Corner shown in the Cherry Blossom theme, a soft pink board with pages and sliders">
+        <figcaption>Cherry Blossom theme</figcaption>
+      </figure>
+      <figure>
+        <img src="screenshots/board-velvet-night.png" alt="Our Cosy Corner shown in the Velvet Night theme, a dark moody board with pages and bookmarks">
+        <figcaption>Velvet Night theme</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <h2>Download</h2>
+    <p class="version-tag">Version 1.0.0 &middot; first public release</p>
+    <div class="downloads">
+      <a class="btn" href="Our%20Cosy%20Corner-1.0.0-arm64.dmg">Download for Mac — Apple Silicon (M1 and later)</a>
+      <a class="btn" href="Our%20Cosy%20Corner-1.0.0.dmg">Download for Mac — Intel</a>
+      <a class="btn" href="Our%20Cosy%20Corner%20Setup%201.0.0.exe">Download for Windows</a>
+    </div>
+  </div>
+</section>
+
+<section id="first-launch">
+  <div class="wrap">
+    <h2>First launch</h2>
+    <p class="note">This build isn't notarized or code-signed yet, so your operating system will show a one-time warning the first time you open it. This is expected — here's how to get past it.</p>
+    <div class="help-box">
+      <div class="help-item">
+        <h3>macOS 15 Sequoia</h3>
+        <ol>
+          <li>Double-click the app. macOS will block it and show a warning — dismiss that dialog.</li>
+          <li>Open <strong>System Settings</strong> → <strong>Privacy &amp; Security</strong>.</li>
+          <li>Scroll down to the message that says <em>"Our Cosy Corner" was blocked</em>, and click <strong>Open Anyway</strong>.</li>
+          <li>Confirm in the follow-up prompt, and the app will open from then on.</li>
+        </ol>
+      </div>
+      <div class="help-item">
+        <h3>macOS 13 / 14</h3>
+        <ol>
+          <li>Right-click (or Control-click) the app.</li>
+          <li>Choose <strong>Open</strong> from the menu.</li>
+          <li>Click <strong>Open</strong> again on the confirmation dialog.</li>
+        </ol>
+      </div>
+      <div class="help-item">
+        <h3>"App is damaged and can't be opened"</h3>
+        <p>This message is macOS being overly cautious about an unsigned app, not an actual problem with the download. Open Terminal and run:</p>
+        <p><code>xattr -cr "/Applications/Our Cosy Corner.app"</code></p>
+        <p>Then relaunch the app as usual.</p>
+      </div>
+      <div class="help-item">
+        <h3>Windows</h3>
+        <ol>
+          <li>You'll see a blue "Windows protected your PC" SmartScreen notice.</li>
+          <li>Click <strong>More info</strong>.</li>
+          <li>Click <strong>Run anyway</strong>.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="release-notes" class="release-notes">
+  <div class="wrap">
+    <h2>Release notes</h2>
+    <h3>v1.0.0 — first public release</h3>
+    <ul>
+      <li>Shared corners for two, with live sync</li>
+      <li>Pages and sub-pages with a rich editor</li>
+      <li>To-dos, sliders, files, PDFs, and bookmarks</li>
+      <li>Six hand-tuned themes</li>
+      <li>Invite-code pairing to connect with your partner</li>
+      <li>Export your corner as JSON, any time</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Use</a>
+    </div>
+    <div class="support">Support: <a href="mailto:ourcosycorner.help@gmail.com">ourcosycorner.help@gmail.com</a> <span class="note">(placeholder address)</span></div>
+    <div class="copyright">&copy; 2026 Our Cosy Corner</div>
+  </div>
+</footer>
+
+</body>
+</html>

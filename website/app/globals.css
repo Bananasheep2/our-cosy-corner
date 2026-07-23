@@ -1,0 +1,644 @@
+@import "tailwindcss";
+
+/* -- self-hosted fonts --------------------------------------------------
+   Replaces the old Google Fonts @import (a render-blocking third-party
+   stylesheet that also serialised a second round-trip for the font files
+   themselves). Both families ship as variable fonts upstream, so one
+   woff2 per family/style covers every weight this stylesheet actually
+   uses — audited below. Latin subset only. font-display: swap so text
+   renders immediately in the fallback stack and swaps in once the font
+   file arrives, instead of blocking first paint. -- */
+@font-face{
+  font-family:'EB Garamond';
+  font-style:normal;
+  font-weight:400 600; /* covers the 400/500/600 normal weights used below */
+  font-display:swap;
+  src:url('/fonts/eb-garamond-normal.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'EB Garamond';
+  font-style:italic;
+  font-weight:400; /* only italic weight referenced (.letter-sign, .dl-why); 500/600 italic fall back to browser-synthesised italic exactly as the old Google Fonts request did */
+  font-display:swap;
+  src:url('/fonts/eb-garamond-italic-400.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'IBM Plex Sans';
+  font-style:normal;
+  font-weight:400 700; /* covers the 400/600/700 weights used below — 500 is requested nowhere in this file, so it's dropped */
+  font-display:swap;
+  src:url('/fonts/ibm-plex-sans.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+/* =============================================================================
+   OUR COSY CORNER — visual system
+   Direction: paper & stationery. Two people keeping letters, plans and
+   photographs in one place. Surfaces read as stock (parchment, linen, card,
+   inset field, hairline edge), not glass. Type is read/write, split by role:
+   IBM Plex Sans for structure (headings, nav, labels, UI chrome, numerals),
+   EB Garamond for anything meant to be *read* (paragraphs, letters, quotes).
+   ========================================================================== */
+
+:root{
+  /* -- surfaces: the five brand tones, reassigned by role. They sit within
+     1.5:1 of each other by design — separation comes from edges and grain,
+     not brightness. -- */
+  --page:   #edede9; /* parchment      — page background            */
+  --wash:   #f5ebe0; /* linen          — alternating section wash   */
+  --panel:  #e3d5ca; /* powder-petal   — card / lifted surface      */
+  --inset:  #d6ccc2; /* dust-grey      — recessed / pressed field   */
+  --edge:   #d5bdaf; /* almond-silk    — hairline rule, border, fill only — never text */
+  --paper:  #faf6f2; /* derived tint   — the topmost sheet (mock windows, panels, the tipped-in photo mat) */
+
+  /* -- ink: derived, contrast-verified (see report for full table) -- */
+  --ink:          #2e2823; /* espresso — body/headings.  12.39:1 on parchment */
+  --muted:        #5f5044; /* taupe, darkened from the raw brief swatch so one
+                               token clears 4.5:1 on every surface incl. panel/inset.
+                               6.58:1 parchment · 5.39:1 panel · 4.89:1 inset */
+  --accent:       #7b4b33; /* sienna — links, buttons, marks. 6.18:1 on parchment */
+  --accent-hover: #5c3623; /* pressed/hover sienna. 8.91:1 on parchment */
+  --accent-on:    #fdf6f0; /* text/icons on a solid accent fill. 6.77:1 on accent */
+
+  /* -- radius: one deliberate 4-step scale -- */
+  --r-sm:   4px;   /* checkboxes, tape marks, tiny inset chips        */
+  --r-md:   10px;  /* buttons, rows, inputs, nested tiles             */
+  --r-lg:   20px;  /* cards, panels, mock windows                     */
+  --r-pill: 999px; /* label chips only — never buttons                */
+
+  /* -- shadow: material, not uniform. one inset (pressed), one quiet
+     resting shadow (a sheet laid down), one lift (genuinely raised),
+     one emboss (the pinned/tipped photo). -- */
+  --shadow-press:  inset 0 1px 3px rgba(46,40,35,.16), inset 0 -1px 0 rgba(255,255,255,.35);
+  --shadow-card:   0 1px 0 rgba(46,40,35,.05), 0 14px 28px -20px rgba(46,40,35,.30);
+  --shadow-float:  0 10px 22px -10px rgba(46,40,35,.24);
+  --shadow-emboss: 0 20px 36px -18px rgba(46,40,35,.34), inset 0 0 0 1px rgba(255,255,255,.5);
+
+  /* -- type -- */
+  --font-head: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'EB Garamond', Georgia, 'Times New Roman', serif;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6}
+section{scroll-margin-top:24px}
+h1,h2,h3{font-family:var(--font-head);color:var(--ink);margin:0;font-weight:700;letter-spacing:-.02em}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+.shell{width:min(1120px,calc(100% - 48px));margin:auto}
+
+/* -- tap targets: WCAG 2.5.5 / Apple HIG want >=44x44 CSS px of hit area
+   on every interactive control. Several links here are small text (brand,
+   nav, footer, "back home", the hero's secondary CTA, the space-card
+   links) that must stay visually small to match the design, and the
+   primary button dips under 44px tall at the smallest phone breakpoint.
+   `::after` adds an invisible, centred overlay that only grows the
+   dimension that's actually short — `max(100%,44px)` is a no-op once the
+   element is already >=44px in that axis — so the hit area grows without
+   changing anything visible. Applied directly to the existing selectors
+   so no markup changes are needed. -- */
+.brand,.nav nav a,.menu-button,.quiet-link,.button,.space-copy a,
+footer div a,.page-nav>a:last-child{position:relative}
+.brand::after,.nav nav a::after,.menu-button::after,.quiet-link::after,.button::after,
+.space-copy a::after,footer div a::after,.page-nav>a:last-child::after{
+  content:"";position:absolute;inset:50%;transform:translate(-50%,-50%);
+  width:max(100%,44px);height:max(100%,44px)
+}
+
+/* -------------------------------- nav --------------------------------
+   `.nav-bar` is the full-bleed sticky strip (translucent parchment,
+   hairline bottom border); `.nav` is the constrained-width row of content
+   inside it. Splitting them means the blur/border spans the whole
+   viewport while the brand/links stay lined up with every other section. */
+.nav-bar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--page) 82%,transparent);backdrop-filter:saturate(1.1) blur(10px);-webkit-backdrop-filter:saturate(1.1) blur(10px);border-bottom:1px solid var(--edge)}
+.nav{height:72px;display:flex;align-items:center;justify-content:space-between;position:relative}
+.brand{font:600 20px var(--font-head);color:var(--ink);text-decoration:none;letter-spacing:-.01em;display:inline-flex;align-items:center;gap:8px}
+.brand span{display:inline-flex;color:var(--accent);font-size:1.1em}
+/* The real product logo in the brand lockup. Served at 64px and drawn at
+   ~1.25em (~25px) so it stays crisp on 2x displays; the art already carries
+   its own parchment ground, so a small radius keeps it reading as a mark. */
+.brand-logo{width:1.25em;height:1.25em;border-radius:6px;display:block;object-fit:contain}
+.nav nav{display:flex;align-items:center;gap:28px;font:600 14px var(--font-head)}
+.nav a,.nav button,footer a{color:var(--ink);text-decoration:none}
+.nav a:hover{color:var(--accent)}
+.text-button{border:0;background:none;font:inherit;cursor:pointer}
+.menu-button{display:none}
+
+/* ------------------------------ buttons ------------------------------- */
+.button{border:0;border-radius:var(--r-md);background:var(--accent);color:var(--accent-on);padding:14px 20px;font:700 14px var(--font-head);letter-spacing:.01em;cursor:pointer;box-shadow:none;transition:background .2s ease,box-shadow .2s ease,transform .2s ease;display:inline-flex;align-items:center}
+.button:hover{background:var(--accent-hover);box-shadow:var(--shadow-float);transform:translateY(-1px)}
+.button:active{transform:translateY(0);box-shadow:none;background:var(--accent-hover)}
+.button b{font-size:18px;line-height:10px;margin-left:9px;font-weight:600}
+.button.small{padding:10px 14px;font-size:12px}
+.quiet-link{font:600 14px var(--font-head);color:var(--ink);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px;transition:border-color .2s ease,color .2s ease}
+.quiet-link:hover{border-color:var(--accent);color:var(--accent)}
+.quiet-link span{color:var(--accent);margin-left:6px}
+
+/* -------------------------------- hero --------------------------------
+   Two columns on desktop: headline/copy/CTAs on the left, the demo in its
+   tipped-in-photograph frame on the right, vertically centred against each
+   other. The hero gets a wider shell than the rest of the page so the
+   split has room to breathe; every other section keeps the standard
+   `.shell` width. */
+.hero.shell{width:min(1220px,calc(100% - 44px))}
+.hero{padding:72px 0 108px}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,5vw,72px);align-items:center}
+.hero-copy-col{text-align:left}
+.eyebrow{font:600 11px var(--font-head);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.eyebrow span{color:var(--accent)}
+.hero h1,h2{margin:18px 0 16px;font:700 clamp(42px,6.4vw,76px)/1 var(--font-head);letter-spacing:-.02em}
+
+/* -- hero entrance: the one orchestrated, non-scroll sequence on the page.
+   The hero is visible on load, so this runs as a plain CSS animation rather
+   than the IntersectionObserver `.rv` system — eyebrow, headline, copy and
+   actions settle in one after another, then the tipped-in photo (its own
+   `.rv` reveal, delayed) settles last, like laying items on a desk in order. -- */
+@keyframes hero-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.hero-enter{opacity:0;animation:hero-in .8s cubic-bezier(.2,.7,.2,1) forwards}
+.hero-enter.enter-1{animation-delay:.05s}
+.hero-enter.enter-2{animation-delay:.16s}
+.hero-enter.enter-3{animation-delay:.32s}
+.hero-enter.enter-4{animation-delay:.46s}
+.hero h1 em,h2 em,h3 em,.space-card em{font-weight:inherit;color:var(--accent);font-style:normal}
+/* Scoped down slightly from the shared `.hero h1,h2` size so the headline
+   doesn't crowd its narrower column between the 900px stacking point and
+   ~1200px — same rule specificity as the shared one, so source order wins. */
+.hero-copy-col h1{font-size:clamp(36px,5.2vw,72px)}
+blockquote em{font-weight:600;color:var(--accent);font-style:italic}
+.hero-copy{max-width:480px;margin:0;color:var(--muted);font:18px/1.65 var(--font-body)}
+.hero-copy strong{color:var(--ink);font-weight:600}
+.actions{display:flex;align-items:center;justify-content:flex-start;gap:26px;margin:30px 0 0}
+.hero-art{position:relative}
+
+/* -- signature element: the demo GIF as a tipped-in photograph, torn
+   paper mat, two tape marks, pinned with a letterpress shadow. This is the
+   one place the design spends its boldness; everything else stays quiet. -- */
+.hero-photo{position:relative;max-width:900px;margin:0 auto;transform:rotate(-1deg)}
+.hero-photo::before,.hero-photo::after{content:"";position:absolute;border-radius:2px}
+.hero-photo::before{top:-11px;left:9%;width:68px;height:23px;background:var(--edge);opacity:.62;transform:rotate(-7deg)}
+.hero-photo::after{top:-9px;right:11%;width:52px;height:21px;background:var(--accent);opacity:.24;transform:rotate(6deg)}
+.hero-gif-mat{background:var(--paper);padding:16px 16px 32px;box-shadow:var(--shadow-emboss);
+  clip-path:polygon(0.00% 1.35%, 9.09% 2.47%, 18.18% 3.20%, 27.27% 3.13%, 36.36% 1.83%, 45.45% 1.18%, 54.55% 2.98%, 63.64% 2.40%, 72.73% 2.61%, 81.82% 1.79%, 90.91% 2.44%, 100.00% 1.80%, 98.10% 0.00%, 98.06% 9.09%, 97.93% 18.18%, 98.60% 27.27%, 98.65% 36.36%, 96.97% 45.45%, 97.72% 54.55%, 97.84% 63.64%, 98.53% 72.73%, 97.81% 81.82%, 96.96% 90.91%, 97.93% 100.00%, 100.00% 97.80%, 90.91% 96.83%, 81.82% 96.82%, 72.73% 97.60%, 63.64% 97.89%, 54.55% 97.35%, 45.45% 97.48%, 36.36% 97.16%, 27.27% 98.52%, 18.18% 98.45%, 9.09% 96.81%, 0.00% 98.00%, 2.92% 100.00%, 2.54% 90.91%, 1.79% 81.82%, 2.76% 72.73%, 1.25% 63.64%, 2.28% 54.55%, 2.25% 45.45%, 2.89% 36.36%, 1.78% 27.27%, 1.66% 18.18%, 2.62% 9.09%, 2.49% 0.00%)}
+.hero-gif-card{border-radius:var(--r-md);overflow:hidden;background:var(--panel);border:1px solid var(--edge)}
+.hero-gif-card img,.hero-gif-card video{display:block;width:100%;height:auto}
+.hero-gif-card video::-webkit-media-controls-panel{border-radius:0 0 var(--r-md) var(--r-md)}
+.hero-photo.rv{opacity:0;transform:rotate(-1deg) translateY(26px) scale(.96);transition:opacity .9s ease .55s,transform .9s cubic-bezier(.2,.7,.2,1) .55s}
+.hero-photo.rv.in{opacity:1;transform:rotate(-1deg) translateY(0) scale(1)}
+
+/* --------------------------- #what section ----------------------------- */
+.what{padding:80px 0 10px}
+.what h2{font-size:clamp(26px,3vw,38px);letter-spacing:-.015em;margin:0 0 34px}
+.what .feature-grid article{min-height:0}
+.what .feature-grid h3{font-size:19px;letter-spacing:-.01em;margin:22px 0 8px;text-wrap:balance}
+
+/* ------------------------------- intro --------------------------------- */
+.intro{background:var(--wash);padding:105px 0}
+.split{display:grid;grid-template-columns:1fr .72fr;gap:100px;align-items:end}
+.split h2,.features h2,.cta h2{font-size:clamp(30px,3.6vw,48px);letter-spacing:-.015em}
+.split p{color:var(--muted);font:18px/1.6 var(--font-body);margin:0 0 6px}
+
+/* ------------------------------- spaces --------------------------------
+   Rebuilt as a real two-column arrangement per card: copy stacked above a
+   full-width mock window pinned to the bottom, so nothing overlaps or
+   clips — the "peek of an app window" reads as a deliberate, contained
+   bleed rather than a layout bug. -------------------------------------- */
+.spaces{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:95px 0}
+.space-card{display:flex;flex-direction:column;min-height:540px;border-radius:var(--r-lg);padding:36px;position:relative;overflow:hidden;border:1px solid var(--edge);transition:box-shadow .25s ease}
+.space-card:hover{box-shadow:var(--shadow-press)}
+.shared{background:var(--panel)}
+.private{background:var(--inset)}
+.space-copy{width:100%;max-width:420px}
+.mini-icon{color:var(--accent);display:block;margin-bottom:34px}
+.mini-icon svg{width:1.6em;height:1.6em}
+.space-copy small{font:600 10px var(--font-head);letter-spacing:.1em;color:var(--muted)}
+.space-copy h3{font:700 clamp(26px,3vw,34px)/1.05 var(--font-head);margin:14px 0;letter-spacing:-.015em}
+.space-copy p{font:15px/1.55 var(--font-body);color:var(--muted)}
+.space-copy a{display:block;color:var(--ink);font:700 13px var(--font-head);margin-top:22px;text-decoration:none}
+.space-copy a:hover{color:var(--accent)}
+.space-copy a b{color:var(--accent);font-size:17px;margin-left:5px}
+.mini-window{width:100%;height:auto;min-height:236px;margin-top:auto;background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--shadow-card);border:1px solid var(--edge);padding:18px;color:var(--ink)}
+.window-head{font:600 11px var(--font-head);padding-bottom:13px;border-bottom:1px solid var(--edge)}
+.window-head span{float:right;color:var(--muted)}
+.mini-columns{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px}
+.mini-columns>div{border-radius:var(--r-md);background:var(--inset);box-shadow:var(--shadow-press);padding:10px}
+.mini-columns small{font:600 8px var(--font-head);letter-spacing:.08em;color:var(--muted)}
+.mini-columns b{display:block;font:600 9px var(--font-head);margin-top:11px}
+.mini-columns p{font:9px var(--font-head);margin:3px 0;color:var(--muted)}
+.photo{height:69px;border-radius:var(--r-sm);margin:9px 0;background:linear-gradient(150deg,var(--accent),var(--edge) 55%,var(--panel))}
+.private-window{width:100%;padding:20px 22px}
+.script{font:500 20px var(--font-body);color:var(--accent);margin:24px 0 11px}
+.letter{font:16px/1.6 var(--font-body);color:var(--muted);margin:0}
+.letter-sign{text-align:right;font:italic 21px var(--font-body);color:var(--accent);margin-top:18px}
+
+/* ------------------------- live to-do (LiveTodo) ------------------------
+   A real to-do list: native <input type="checkbox">, label association,
+   keyboard operable, strike-through on completion. Unchecked = pressed
+   into the paper (inset shadow); checked = a small block of ink. -------- */
+.todo-list{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.todo-row{display:flex;align-items:flex-start;gap:9px;cursor:pointer;padding:1px 0;position:relative}
+/* This row's own box is far under 44px tall by design — it's a miniature
+   of the real app's to-do block inside a decorative "mock window", not a
+   primary site control, and growing it to a literal 44px would visibly
+   inflate the mockup (forbidden — this is a visual-design pass). The
+   `.todo-list` gap is only 9px, so the safe, non-overlapping maximum any
+   one row can silently claim from its neighbours is half that gap on each
+   side; this gets the real hit area from ~25px to ~34px without touching
+   the row above or below. Documented here rather than pretending 44px was
+   reached. */
+.todo-row::after{content:"";position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:calc(100% + 9px)}
+.todo-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.todo-box{width:15px;height:15px;flex:0 0 auto;margin-top:2px;border-radius:var(--r-sm);border:1.5px solid var(--edge);background:var(--paper);box-shadow:var(--shadow-press);display:grid;place-items:center;color:transparent;transition:background .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease,transform .15s ease}
+.todo-box svg{width:10px;height:10px;stroke-width:3}
+.todo-input:checked+.todo-box{background:var(--accent);border-color:var(--accent);color:var(--accent-on);box-shadow:none;transform:scale(1.06)}
+.todo-row:active .todo-box{transform:scale(.9)}
+.todo-input:focus-visible+.todo-box{outline:2px solid var(--accent);outline-offset:2px}
+.todo-copy{display:grid;gap:1px}
+.todo-label{font:600 9px var(--font-head)}
+.todo-meta{font:9px var(--font-head);color:var(--muted)}
+.todo-item.is-done .todo-label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--edge)}
+.todo-item.is-done .todo-meta{opacity:.65}
+
+/* ------------------------------ features -------------------------------- */
+.features{background:var(--panel);padding:110px 0}
+.center{text-align:center}
+.features h2{margin-bottom:48px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}
+.feature-grid article{min-height:235px;border:1px solid var(--edge);border-radius:var(--r-lg);background:var(--paper);padding:28px;transition:box-shadow .25s ease,transform .25s ease,border-color .25s ease}
+.feature-grid article:hover{box-shadow:var(--shadow-press);transform:translateY(1px);border-color:var(--edge)}
+.feature-grid span{color:var(--accent);display:inline-flex}
+.feature-grid span svg{width:1.5em;height:1.5em}
+.feature-grid h3{font:600 22px var(--font-head);margin:30px 0 9px;letter-spacing:-.01em}
+.feature-grid p{margin:0;color:var(--muted);font:15px/1.55 var(--font-body)}
+
+/* --------------------------- theme switcher ------------------------------
+   The signature interactive moment: seven real app themes, presented as a
+   little fan of paint chips (not glowing dots — this is stationery, not
+   software chrome) beside a live mockup of the actual UI. Choosing a chip
+   recolours the mockup's CSS custom properties on a smooth transition;
+   Velvet Night deliberately inverts ink/accent against a dark page, so
+   every mockup rule below transitions colour explicitly rather than
+   snapping. -------------------------------------------------------------- */
+.peek-section{background:var(--wash);padding:112px 0}
+.peek-section .center{margin-bottom:0}
+/* Sized down off the display default (line ~150): this sits directly under the
+   hero, so it must stay clearly subordinate to the h1 — matches .split/.cta. */
+.peek-section h2{font-size:clamp(30px,3.6vw,48px);letter-spacing:-.015em;margin-bottom:14px}
+.peek-intro{max-width:540px;margin:0 auto;color:var(--muted);font:18px/1.6 var(--font-body)}
+
+/* Both tracks sized to content and centred as a pair — with a 1fr second
+   track the mock's own max-width left a wide gap on the right, which read as
+   broken under the centred heading above it. */
+.peek{display:grid;grid-template-columns:auto auto;justify-content:center;gap:56px;align-items:center;margin-top:54px}
+
+/* -- the control panel: three stacked groups (theme / accent / corner
+   radius) inside one paper card. Only the theme group keeps the paint-chip
+   fan; accent and radius get their own, simpler controls. -- */
+/* 296px = 252px of content: fits all six accent dots on one row and the seven
+   theme chips as 4+3 rather than 3+3+1 (both measured, not estimated). */
+.peek-controls{width:296px;padding:24px 22px;background:var(--panel);border:1px solid var(--edge);border-radius:var(--r-lg);box-shadow:var(--shadow-card);display:grid;gap:24px}
+.peek-control-group+.peek-control-group{padding-top:22px;border-top:1px solid var(--edge)}
+.peek-control-label{font:600 10px var(--font-head);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+
+.peek-swatches{display:flex;flex-wrap:wrap;align-content:flex-start;gap:16px 14px}
+.swatch{border:0;background:none;padding:2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;width:52px}
+.swatch:focus-visible{border-radius:8px}
+.swatch-chip{position:relative;display:block;width:38px;height:50px;border-radius:2px 2px 7px 7px;border:1px solid var(--edge);
+  background:linear-gradient(155deg,var(--swatch-bg) 0%,var(--swatch-bg) 44%,var(--swatch-accent) 44%,var(--swatch-accent) 100%);
+  box-shadow:var(--shadow-card);transform:rotate(var(--tilt,-4deg));
+  transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s ease,border-color .2s ease}
+.swatch:nth-child(4n+1){--tilt:-6deg}
+.swatch:nth-child(4n+2){--tilt:3deg}
+.swatch:nth-child(4n+3){--tilt:-2deg}
+.swatch:nth-child(4n+4){--tilt:5deg}
+.swatch:hover .swatch-chip{transform:rotate(0deg) translateY(-3px);box-shadow:var(--shadow-float)}
+.swatch:active .swatch-chip{transform:rotate(0deg) translateY(-1px) scale(.95)}
+.swatch[aria-pressed="true"] .swatch-chip{transform:rotate(0deg) translateY(-2px);box-shadow:var(--shadow-float);border-color:var(--accent)}
+.swatch[aria-pressed="true"] .swatch-chip::before{content:"";position:absolute;top:-5px;left:50%;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--accent);box-shadow:0 1px 2px rgba(46,40,35,.35),inset 0 -1px 1px rgba(0,0,0,.25),inset 0 1px 1px rgba(255,255,255,.4)}
+.swatch-name{font:600 8.5px/1.25 var(--font-head);letter-spacing:.01em;color:var(--muted);text-align:center}
+.swatch[aria-pressed="true"] .swatch-name{color:var(--ink)}
+
+/* -- accent colour: a small row of real circle buttons. Unlike the theme
+   swatches these are allowed to be dots — only the theme presets have to
+   stay paint chips. A ring (not a dot-inside-dot) marks the selection so it
+   reads clearly against every accent hue, including the palest ones. -- */
+.peek-accents{display:flex;flex-wrap:wrap;gap:11px}
+.accent-swatch{position:relative;width:30px;height:30px;border-radius:50%;border:2px solid var(--paper);box-shadow:0 0 0 1px var(--edge);padding:0;cursor:pointer;transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s ease}
+.accent-swatch:hover{transform:scale(1.12)}
+.accent-swatch:active{transform:scale(.94)}
+.accent-swatch[aria-pressed="true"]{box-shadow:0 0 0 1px var(--paper),0 0 0 3px var(--ink)}
+.accent-swatch::after{content:"";position:absolute;inset:50%;transform:translate(-50%,-50%);width:max(100%,44px);height:max(100%,44px)}
+
+/* -- corner radius: a three-way segmented toggle, styled like a pressed
+   paper strip so it reads as one control rather than three buttons. -- */
+.peek-radii{display:inline-flex;gap:4px;background:var(--inset);box-shadow:var(--shadow-press);border-radius:var(--r-md);padding:4px}
+.radius-btn{position:relative;border:0;background:none;padding:9px 15px;font:600 12px var(--font-head);color:var(--muted);border-radius:var(--r-sm);cursor:pointer;transition:background-color .25s ease,color .25s ease,box-shadow .25s ease}
+.radius-btn[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:var(--shadow-card)}
+.radius-btn::after{content:"";position:absolute;inset:50%;transform:translate(-50%,-50%);width:max(100%,44px);height:max(100%,44px)}
+
+.peek-mock-wrap{max-width:440px}
+.peek-mock{border-radius:var(--t-radius-card,var(--r-lg));overflow:hidden;border:1px solid var(--t-line);box-shadow:var(--shadow-emboss);background:var(--t-bg);color:var(--t-ink);
+  transition:background-color .38s cubic-bezier(.3,.6,.3,1),color .38s ease,border-color .38s ease,border-radius .35s cubic-bezier(.3,.6,.3,1)}
+.peek-head{display:flex;align-items:center;gap:9px;padding:13px 16px;background:var(--t-panel);border-bottom:1px solid var(--t-line);transition:background-color .38s ease,border-color .38s ease}
+/* Solid accent fill + a computed onAccent, the same safe pattern as
+   .peek-check below — see ThemeSwitcher's pickOnAccent for why, and the
+   report for the audited worst-case ratio. */
+.peek-mark{display:inline-flex;width:22px;height:22px;flex:0 0 auto;border-radius:var(--t-radius-control,6px);background:var(--t-accent);color:var(--t-on-accent);align-items:center;justify-content:center;transition:background-color .38s ease,color .38s ease,border-radius .35s ease}
+.peek-mark svg{width:.85em;height:.85em}
+.peek-brand{font:700 12px var(--font-head);letter-spacing:-.01em;color:var(--t-ink)}
+.peek-code{margin-left:auto;font:600 9px var(--font-head);letter-spacing:.06em;color:var(--t-ink);background:var(--t-panel2);border:1px solid var(--t-line);border-radius:var(--r-pill);padding:4px 9px;transition:background-color .38s ease,border-color .38s ease;white-space:nowrap}
+.peek-body{display:grid;grid-template-columns:112px 1fr}
+.peek-tree{background:var(--t-panel2);padding:14px 12px;display:grid;align-content:start;gap:3px;border-right:1px solid var(--t-line);transition:background-color .38s ease,border-color .38s ease}
+.peek-tree-label{display:flex;align-items:center;gap:6px;font:600 9px var(--font-head);color:var(--t-ink);opacity:.68;margin-bottom:6px}
+.peek-tree-label svg{width:.9em;height:.9em}
+.peek-page{font:600 10px var(--font-head);padding:6px 8px;border-radius:var(--t-radius-tiny,var(--r-sm));color:var(--t-ink);opacity:.72;transition:border-radius .35s ease}
+.peek-page-active{background:var(--t-accent-soft);position:relative;opacity:1;transition:background-color .38s ease}
+.peek-page-active::before{content:"";position:absolute;left:-12px;top:3px;bottom:3px;width:3px;border-radius:2px;background:var(--t-accent);transition:background-color .38s ease}
+.peek-newpage{display:flex;align-items:center;gap:5px;font:600 9px var(--font-head);color:var(--t-ink);opacity:.55;padding:6px 8px}
+.peek-newpage svg{width:.85em;height:.85em}
+.peek-page-body{padding:16px 18px;background:var(--t-panel);transition:background-color .38s ease}
+.peek-title{font:700 15px var(--font-head);margin-bottom:10px;letter-spacing:-.01em;color:var(--t-ink)}
+.peek-block{display:flex;align-items:center;gap:8px;font:600 10px var(--font-head);padding:8px 0;border-bottom:1px solid var(--t-line);color:var(--t-ink);transition:border-color .38s ease}
+.peek-block-done{opacity:.62;text-decoration:line-through}
+.peek-check{display:inline-flex;width:15px;height:15px;flex:0 0 auto;border-radius:var(--t-radius-tiny,4px);background:var(--t-accent);color:var(--t-on-accent);align-items:center;justify-content:center;transition:background-color .38s ease,color .38s ease,border-radius .35s ease}
+.peek-check svg{width:.7em;height:.7em;stroke-width:3}
+.peek-check-empty{background:transparent;border:1.5px solid var(--t-line)}
+.peek-chip{margin-top:10px;display:inline-flex;align-items:center;gap:5px;font:600 9px var(--font-head);color:var(--t-ink);opacity:.55;border:1px dashed var(--t-line);border-radius:var(--t-radius-control,var(--r-md));padding:6px 10px;transition:border-color .38s ease,border-radius .35s ease}
+.peek-chip svg{width:.85em;height:.85em}
+.peek-name{margin-top:16px;font:15px var(--font-body);color:var(--muted);text-align:center}
+.peek-name strong{font-family:var(--font-head);font-weight:700;color:var(--accent)}
+
+/* ------------------------------- quote ---------------------------------- */
+.quote{text-align:center;padding:125px 0 130px}
+.quote-mark{font:60px/.3 var(--font-body);color:var(--accent);text-shadow:0 1px 0 rgba(255,255,255,.5)}
+blockquote{margin:31px 0 22px;font:500 clamp(28px,4vw,50px)/1.2 var(--font-body);letter-spacing:-.01em}
+.quote-flourish{color:var(--accent);opacity:.7}
+.quote-flourish svg{width:2.4em;height:1em}
+
+/* --------------------------------- cta ----------------------------------- */
+.cta{text-align:center;padding:96px 0 102px;background:var(--accent);color:var(--accent-on)}
+.cta .eyebrow{color:var(--accent-on);opacity:.82}
+.big-heart{display:block;font-size:clamp(44px,6vw,64px);line-height:1;color:var(--accent-on);opacity:.9;margin-bottom:18px}
+.cta h2{margin-top:17px;color:var(--accent-on)}
+.cta h2 em{color:var(--accent-on)}
+.cta p{margin:0 0 25px;color:var(--accent-on);opacity:.85;font:16px/1.5 var(--font-body)}
+.cta .button{background:var(--paper);color:var(--accent)}
+.cta .button:hover{background:#fff;box-shadow:var(--shadow-float)}
+.cta .button b{color:var(--accent)}
+
+/* -------------------------------- footer --------------------------------- */
+footer{height:130px;display:flex;align-items:center;justify-content:space-between;font:14px var(--font-body);color:var(--muted)}
+footer p{margin:0}
+footer div{display:flex;gap:20px}
+footer div a{color:var(--muted);font-family:var(--font-head);font-size:13px;font-weight:600}
+footer div a:hover{color:var(--accent)}
+
+/* ---------------------------- simple pages -------------------------------
+   /pricing, /about, /download, /privacy, /terms share this shell.        */
+.simple-page{min-height:100vh;background:var(--page);padding-bottom:90px}
+.page-nav{height:86px;display:flex;align-items:center;justify-content:space-between}
+.page-nav>a:last-child{font:600 13px var(--font-head);color:var(--ink);text-decoration:none}
+.page-nav>a:last-child:hover{color:var(--accent)}
+.page-nav>a:last-child b{color:var(--accent);font-size:17px;margin-left:5px}
+.simple-hero{text-align:center;padding:100px 0 72px}
+.simple-hero h1{font:700 clamp(38px,5.6vw,64px)/1.02 var(--font-head);letter-spacing:-.02em;margin:18px 0}
+.simple-hero h1 em{font-weight:inherit;color:var(--accent);font-style:normal}
+.simple-hero p{color:var(--muted);font:18px var(--font-body)}
+
+.pricing-panel,.about-panel{max-width:720px;background:var(--paper);border:1px solid var(--edge);border-radius:var(--r-lg);padding:44px 52px;box-shadow:var(--shadow-card)}
+.pricing-panel{text-align:center}
+.pricing-panel strong{display:block;color:var(--accent);font:700 clamp(56px,9vw,88px)/.9 var(--font-head);letter-spacing:-.02em;margin:26px 0 12px}
+.pricing-panel h2{font:700 28px var(--font-head);letter-spacing:-.01em;margin:0 0 12px}
+.pricing-panel>p{max-width:500px;margin:0 auto;color:var(--muted);font:16px/1.65 var(--font-body)}
+.pricing-panel ul{text-align:left;max-width:470px;margin:27px auto 30px;padding:0;list-style:none;color:var(--muted);font:15px/2 var(--font-body)}
+.pricing-panel li::before{content:"→";color:var(--accent);font-weight:700;margin-right:10px;font-family:var(--font-head)}
+
+.about-page .simple-hero{padding-bottom:75px}
+.about-panel{background:var(--wash)}
+.about-letter .quote-mark{font-size:56px;display:block}
+.about-letter p{max-width:620px;color:var(--muted);font:italic 500 21px/1.55 var(--font-body);margin:10px auto 25px}
+.about-letter p+p{font:16px/1.7 var(--font-body);font-style:normal;color:var(--muted)}
+.about-letter p:last-child{margin-bottom:0}
+
+/* ------------------------------- download -------------------------------- */
+.download-panel{max-width:720px;background:var(--paper);border:1px solid var(--edge);border-radius:var(--r-lg);padding:44px 52px;box-shadow:var(--shadow-card)}
+.download-panel h2{font:700 26px var(--font-head);letter-spacing:-.01em;margin:0 0 20px}
+.download-panel h3{font:600 17px var(--font-head);letter-spacing:-.005em;margin:30px 0 10px}
+.dl-list{display:grid;gap:10px}
+.dl-row{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid var(--edge);border-radius:var(--r-md);padding:16px 18px;background:var(--panel);text-decoration:none;color:var(--ink);transition:box-shadow .2s ease,border-color .2s ease,transform .2s ease}
+.dl-row:hover{border-color:var(--accent);box-shadow:var(--shadow-float);transform:translateY(-1px)}
+.dl-row strong{display:block;font:700 14px var(--font-head)}
+.dl-row small{display:block;margin-top:4px;color:var(--muted);font:11px var(--font-head)}
+.dl-help{margin-top:8px}
+.dl-help p{color:var(--muted);font:16px/1.65 var(--font-body);margin:0 0 10px}
+.dl-code{background:var(--inset);box-shadow:var(--shadow-press);border-radius:var(--r-sm);padding:12px 14px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);overflow-x:auto;margin:0 0 12px}
+.dl-why{background:var(--inset);box-shadow:var(--shadow-press);border-radius:var(--r-md);padding:14px 16px;font:italic 15px/1.55 var(--font-body);color:var(--muted)!important}
+.dl-notes ul{margin:0;padding-left:20px;color:var(--muted);font:15px/1.9 var(--font-body)}
+.dl-legal{margin-top:30px;color:var(--muted);font:13px var(--font-head)}
+.dl-legal a{color:var(--accent);font-weight:600;text-decoration:none}
+
+/* -------------------------------- legal ----------------------------------- */
+.legal-panel{max-width:760px;background:var(--paper);border:1px solid var(--edge);border-radius:var(--r-lg);padding:44px 52px}
+.legal-panel section{margin-bottom:34px}
+.legal-panel section:last-child{margin-bottom:0}
+.legal-panel h2{font:600 20px var(--font-head);letter-spacing:-.005em;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--edge)}
+.legal-panel p,.legal-panel li{color:var(--muted);font:15px/1.75 var(--font-body)}
+.legal-panel ul{padding-left:20px;margin:0}
+.legal-panel li{margin-bottom:6px}
+.legal-panel a{color:var(--accent);font-weight:600;font-family:var(--font-head)}
+.legal-panel .callout{background:var(--inset);box-shadow:var(--shadow-press);border-radius:var(--r-md);padding:16px 18px}
+.legal-panel .callout p{margin:0}
+
+/* --------------------------------- auth ------------------------------------
+   /reset (set a new password) + /confirmed (static). Same card language as
+   .download-panel/.legal-panel above, narrower since it's just a form. */
+.auth-panel{max-width:460px;background:var(--paper);border:1px solid var(--edge);border-radius:var(--r-lg);padding:44px 44px;box-shadow:var(--shadow-card);text-align:left}
+.auth-panel h2{font:700 22px var(--font-head);letter-spacing:-.01em;margin:0 0 8px}
+.auth-intro{color:var(--muted);font:16px/1.6 var(--font-body);margin:0 0 26px}
+.auth-field{margin-bottom:18px}
+.auth-field label{display:block;font:600 12px var(--font-head);letter-spacing:.03em;color:var(--muted);margin-bottom:7px}
+.auth-field input{width:100%;padding:13px 14px;border-radius:var(--r-md);border:1px solid var(--edge);background:var(--inset);box-shadow:var(--shadow-press);color:var(--ink);font:16px var(--font-body);outline:none;transition:box-shadow .2s ease}
+.auth-field input:focus-visible{box-shadow:var(--shadow-press),0 0 0 2px var(--accent);outline:none}
+/* a warm red, not in the core palette (nothing else on the site needs an
+   error tone) — 5.3:1 on --paper, well past the 4.5:1 body-text floor. */
+.auth-error{margin:7px 0 0;color:#a5321a;font:13px var(--font-head)}
+.password-row{display:flex;gap:8px;align-items:stretch}
+.password-row input{flex:1;min-width:0}
+.pw-toggle{flex:0 0 auto;min-width:64px;min-height:44px;border:1px solid var(--edge);background:var(--panel);color:var(--muted);border-radius:var(--r-md);font:600 12px var(--font-head);letter-spacing:.03em;padding:0 14px;cursor:pointer;transition:background .2s ease,color .2s ease}
+.pw-toggle:hover{background:var(--wash);color:var(--ink)}
+.auth-submit{width:100%;justify-content:center;margin-top:6px;border:0}
+.auth-submit:disabled{opacity:.65;cursor:default;transform:none;box-shadow:none}
+.auth-result{text-align:center;color:var(--muted);font:17px/1.6 var(--font-body)}
+.auth-result strong{color:var(--ink);font-family:var(--font-head)}
+.auth-result.is-error strong{color:#a5321a}
+
+/* -------------------------- icons (inline SVG) ---------------------------- */
+.icon{display:inline-block;vertical-align:-.125em;width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* ============================================================================
+   Ambient scroll layer + reveal-on-scroll
+   Replaces the old 26-glyph twinkle field and the three floating orbs. The
+   only ambient decoration left is a faint paper-grain wash (static) and a
+   single quiet "margin rule" — like a bookmark ribbon — that lengthens with
+   scroll depth. Sparse, large, and quiet, per the brief.
+   ========================================================================== */
+.ambient-field{position:fixed;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+.ambient-field::before{content:"";position:absolute;inset:-10%;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.18 0 0 0 0 0.16 0 0 0 0 0.14 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:220px 220px;opacity:.05;mix-blend-mode:multiply}
+/* The ribbon is a fixed-height (100vh) element scaled with `transform`
+   rather than an animated `height` — height is a layout-triggering
+   property, so writing it on every scroll frame forces layout+paint each
+   time; transform:scaleY() is compositor-only, so the same scroll-tied
+   growth costs far less on a phone GPU. Visual result is identical. */
+.margin-rule{position:absolute;top:0;left:22px;width:2px;height:100vh;background:linear-gradient(var(--accent),var(--edge));opacity:.32;transform:scaleY(0);transform-origin:top}
+main>*{position:relative;z-index:2}
+
+/* -- reveal choreography: one base rise plus a small set of role variants,
+   so direction/distance/timing say something about what's entering rather
+   than repeating the same fade everywhere. Pairs of `.rv-left`/`.rv-right`
+   are used where the content itself is a pair (the shared vs. private
+   space cards; the swatches you choose from vs. the mockup that answers) —
+   opposite entrances that meet in the middle read as "two sides, one
+   corner" rather than being decoration for its own sake. -- */
+.rv{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv-left{transform:translateX(-30px)}
+.rv-right{transform:translateX(30px)}
+.rv-rise-lg{transform:translateY(34px);transition-duration:.85s}
+.rv-fade-sm{transform:translateY(10px);transition:opacity .55s ease .12s,transform .55s cubic-bezier(.2,.7,.2,1) .12s}
+.rv-settle{transform:scale(.97)}
+.rv.in{opacity:1;transform:none}
+
+.stagger>*:nth-child(1){transition-delay:0ms}
+.stagger>*:nth-child(2){transition-delay:90ms}
+.stagger>*:nth-child(3){transition-delay:180ms}
+
+.quote.rv{transform:translateY(28px);transition-duration:.95s}
+
+@media(prefers-reduced-motion:reduce){
+  .rv,.hero-photo.rv{opacity:1!important;transform:none!important;transition:none!important}
+  .margin-rule{display:none}
+  .hero-enter{opacity:1!important;animation:none!important}
+  .peek-mock,.peek-mock *,.swatch-chip,.button,.feature-grid article,.space-card,.todo-box{transition:none!important}
+}
+
+/* =============================================================================
+   Responsive
+   Breakpoints the layout actually needs: 1180 (mid-width grid patch), 900
+   (tighten spacing before full stacking), 760 (stack to one column), 420
+   (smallest phones — tighten scale further). Floor: 320px.
+   ========================================================================== */
+@media(min-width:761px) and (max-width:1180px){
+  .feature-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:900px){
+  /* Hero stacks to a single column: text first, then the demo. Left-aligned
+     text carries down rather than snapping to centred, so nothing re-flows
+     sideways at the breakpoint — see report for why. */
+  .hero-grid{grid-template-columns:1fr;gap:40px}
+  .hero-copy-col h1{font-size:clamp(36px,8vw,64px)}
+  .split{grid-template-columns:1fr;gap:28px;align-items:start}
+  .spaces{gap:16px}
+  .peek{grid-template-columns:1fr;justify-items:center;gap:36px}
+  .peek-controls{width:100%;max-width:420px}
+}
+
+@media(max-width:760px){
+  .shell{width:min(100% - 32px,560px)}
+  .hero.shell{width:min(100% - 32px,560px)}
+  .nav{height:64px}
+  .nav nav{display:none}
+  .nav nav.open{display:flex;position:absolute;right:0;top:53px;z-index:5;padding:17px;background:var(--paper);border:1px solid var(--edge);border-radius:var(--r-md);box-shadow:var(--shadow-card);flex-direction:column;align-items:stretch;min-width:170px;gap:16px}
+  .menu-button{display:block;border:0;background:none;font-size:20px;color:var(--ink)}
+  .hero{padding:52px 0 68px}
+  .hero-copy{font-size:16px}
+  .actions{flex-direction:column;align-items:flex-start;gap:16px;margin:24px 0 0}
+  .hero-photo{max-width:100%}
+  .hero-photo::before,.hero-photo::after{width:44px;height:17px}
+  .what{padding:56px 0 4px}
+  .intro{padding:64px 0}
+  .spaces{grid-template-columns:1fr;padding:52px 0;gap:14px}
+  .space-card{min-height:0;padding:26px 24px 24px}
+  .mini-window{min-height:0}
+  .features{padding:68px 0}
+  .feature-grid{grid-template-columns:1fr}
+  .feature-grid article{min-height:0;padding:23px}
+  .feature-grid h3{margin:16px 0 8px}
+  .peek-section{padding:64px 0}
+  .peek{margin-top:36px}
+  .peek-body{grid-template-columns:96px 1fr}
+  .quote{padding:78px 0}
+  .cta{padding:70px 0}
+  footer{height:auto;padding:35px 0;display:grid;gap:18px}
+  footer div{gap:15px}
+  .page-nav{height:72px}
+  .simple-hero{padding:72px 0 46px}
+  .simple-hero p{font-size:16px}
+  .pricing-panel,.about-panel,.download-panel,.legal-panel,.auth-panel{width:min(100% - 32px,560px);padding:28px 22px}
+  .download-panel h2{font-size:22px}
+  .dl-row{flex-direction:column;align-items:flex-start;gap:12px}
+  .about-letter p{font-size:19px}
+  .about-letter p+p{font-size:16px}
+
+  /* -- readability floor on phones: body copy stays >=16px (below that,
+     iOS also zooms the page on input focus), and the smallest real
+     captions/labels (as opposed to the miniature app-window mockups
+     below, which stay at their tiny screenshot-accurate size on purpose)
+     stay >=13px. Desktop sizes are untouched. -- */
+  .eyebrow{font-size:13px}
+  .space-copy p{font-size:16px}
+  .legal-panel p,.legal-panel li{font-size:16px}
+  .pricing-panel ul{font-size:16px}
+  .dl-why{font-size:16px}
+  .dl-row small{font-size:13px}
+  .swatch{width:64px}
+  /* 11px so the longest single-word name ("Parchment") fits the 64px chip;
+     break-word (not anywhere) keeps it from splitting mid-word if it ever
+     doesn't — two-word names still wrap at the space. */
+  .swatch-name{font-size:11px;overflow-wrap:break-word}
+
+  /* -- the fixed, blend-mode grain wash is a ~5%-opacity texture that's
+     barely perceptible even on a large monitor, and mix-blend-mode over a
+     full-viewport fixed layer forces the compositor to re-blend it against
+     scrolling content every frame — a cost that isn't earning its place on
+     a phone GPU. The margin-rule (the visible scroll-progress line) stays;
+     it's cheap (transform-only) and an intentional part of the design. -- */
+  .ambient-field::before{display:none}
+}
+
+@media(max-width:420px){
+  .shell{width:calc(100% - 24px)}
+  .hero.shell{width:calc(100% - 24px)}
+  .hero{padding:44px 0 52px}
+  /* was 15px — below the 16px floor (and would let iOS Safari zoom on
+     focus if this were an input). The ::after tap-target overlay added to
+     .button above already covers its own <44px height at this size. */
+  .hero-copy{font-size:16px}
+  .button{padding:13px 17px;font-size:13px}
+  .space-card{padding:20px 18px 20px}
+  .pricing-panel,.about-panel,.download-panel,.legal-panel,.auth-panel{padding:22px 16px}
+}
+
+/* Mobile: the paired left/right reveals translate horizontally, so any card
+   still below the fold sat 30px outside the viewport and widened the document
+   (measured: 14-18px of horizontal scroll at 320-430px). The "two sides
+   meeting in the middle" gesture only reads when the pair is side by side, and
+   on mobile they're stacked — so reveal them vertically instead. */
+@media(max-width:760px){
+  .rv-left,.rv-right{transform:translateY(22px)}
+  .rv-left.in,.rv-right.in{transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .rv-left,.rv-right{transform:none}
+}
+
+/* Safety net: a reveal that translates horizontally must never be able to
+   widen the document at any width (it did at 768px, where the space cards are
+   still two-up). `clip` rather than `hidden` — it doesn't create a scroll
+   container and so can't break position:sticky or anchor scrolling. */
+main{overflow-x:clip}

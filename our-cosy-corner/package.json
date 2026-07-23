@@ -1,0 +1,89 @@
+{
+  "name": "our-cosy-corner",
+  "version": "1.0.5",
+  "description": "A cosy private workspace for couples, friends and families \u2014 plan, take notes, and keep photos and files together.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check main.js && node --check preload.js",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist": "electron-builder --mac --win"
+  },
+  "author": "Our Cosy Corner",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^43.1.1",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.7",
+    "electron-updater": "^6.8.9"
+  },
+  "build": {
+    "appId": "com.cosycorner.app",
+    "productName": "Our Cosy Corner",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!**/*.md",
+      "!_*test*",
+      "!_test-*",
+      "!**/*.test.js",
+      "!SETUP.md",
+      "!README.md",
+      "!**/{.DS_Store,.git,.gitignore,.gitattributes}",
+      "!**/{test,tests,__tests__,scratch,scratchpad}/**"
+    ],
+    "afterPack": "build/afterPack.js",
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://downloads.ourcosycorner.com",
+        "channel": "latest"
+      }
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.lifestyle",
+      "icon": "build/icon.icns",
+      "identity": null,
+      "notarize": false,
+      "artifactName": "Our-Cosy-Corner-${version}-${arch}.${ext}"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Our-Cosy-Corner-Setup-${version}.${ext}"
+    }
+  }
+}
