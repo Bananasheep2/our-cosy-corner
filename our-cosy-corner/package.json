@@ -1,6 +1,6 @@
 {
   "name": "our-cosy-corner",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A cosy private workspace for couples, friends and families \u2014 plan, take notes, and keep photos and files together.",
   "main": "main.js",
   "scripts": {

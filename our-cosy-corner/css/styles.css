@@ -1037,3 +1037,66 @@ select:focus-visible,
     animation: none !important;
   }
 }
+
+/* ---------- Update overlay ----------
+   A translucent cover over the whole app. z-index sits above the titlebar
+   drag strip (5) and every panel so it truly blocks interaction — for a
+   critical update the app can't be used until it's installed. */
+.update-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  display: grid; place-items: center; padding: 24px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-app-region: no-drag;
+  animation: update-fade .28s ease both;
+}
+.update-overlay[hidden] { display: none !important; }
+@keyframes update-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.update-card {
+  width: min(460px, 100%); text-align: center;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-radius: calc(var(--radius) * 1.4);
+  padding: 34px 32px 28px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 30px 70px -28px rgba(0,0,0,.4);
+  animation: update-pop .34s cubic-bezier(.2,.7,.25,1) both;
+}
+@keyframes update-pop { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+
+.update-emblem {
+  display: grid; place-items: center; width: 62px; height: 62px; margin: 0 auto 14px;
+  border-radius: 50%; background: var(--accent-soft); color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.update-title { font-family: var(--font-head); font-size: 22px; letter-spacing: -.4px; margin: 0 0 8px; }
+.update-sub { color: var(--ink-soft); font-size: 14.5px; line-height: 1.5; margin: 0 0 18px; }
+
+.update-features {
+  list-style: none; margin: 0 0 22px; padding: 0; text-align: left;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.update-features li {
+  position: relative; padding-left: 26px; font-size: 14px; line-height: 1.45; color: var(--ink);
+}
+.update-features li::before {
+  content: ""; position: absolute; left: 4px; top: 6px; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--accent);
+}
+.update-features:empty { display: none; }
+
+.update-progress { margin: 0 0 20px; }
+.update-bar {
+  height: 8px; border-radius: 999px; background: var(--panel-2);
+  border: 1px solid var(--line); overflow: hidden;
+}
+.update-bar > i {
+  display: block; height: 100%; width: 0%; background: var(--accent);
+  transition: width .25s ease;
+}
+#update-progress-label { display: block; margin-top: 8px; font-size: 12.5px; color: var(--ink-soft); }
+
+.update-actions { display: flex; gap: 12px; justify-content: center; }
+.update-actions .btn-primary,
+.update-actions .btn-secondary { min-width: 120px; }
+.update-overlay.is-critical .update-actions { justify-content: center; }

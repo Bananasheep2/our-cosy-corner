@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+export const metadata = {
+  title: 'Privacy Policy',
+  description: 'What Our Cosy Corner collects, where it’s stored, and who can see it — kept as small and plain as your corner.',
+  alternates: { canonical: '/privacy' },
+};
+
 export default function PrivacyPage() {
   return (
     <main className="simple-page legal-page">

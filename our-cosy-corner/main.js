@@ -18,6 +18,7 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const https = require('https');
 
 let mainWindow = null;
 
@@ -25,6 +26,47 @@ let mainWindow = null;
 // the download page on the site, since mac can't self-install while unsigned
 // (see initAutoUpdater below).
 const UPDATE_RELEASES_URL = 'https://ourcosycorner.com/download';
+
+// A tiny release manifest the app polls on launch — separate from the
+// electron-updater latest*.yml because it carries two things the yml can't:
+// whether an update is CRITICAL (force it), and the human feature list the
+// update overlay shows. Fetched in the MAIN process (Node https, no renderer
+// CSP to satisfy) and pushed to the window via the existing update-status
+// channel. Editing this file on the site changes the prompt for every client
+// without shipping a new build.
+const RELEASE_INFO_URL = 'https://ourcosycorner.com/release-info.json';
+
+// Numeric-dotted version compare (1.0.10 > 1.0.9). Returns -1/0/1. Anything
+// unparseable sorts low so a malformed value never blocks the app.
+function compareVersions(a, b) {
+  const pa = String(a || '0').split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = String(b || '0').split('.').map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d !== 0) return d < 0 ? -1 : 1;
+  }
+  return 0;
+}
+
+// Resolve the release manifest, or null on any failure (offline, 404, bad
+// JSON, timeout) — a broken manifest must never wedge startup.
+function fetchReleaseInfo() {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (v) => { if (!done) { done = true; resolve(v); } };
+    try {
+      const req = https.get(RELEASE_INFO_URL, { timeout: 8000 }, (res) => {
+        if (res.statusCode !== 200) { res.resume(); return finish(null); }
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (c) => { body += c; if (body.length > 65536) req.destroy(); });
+        res.on('end', () => { try { finish(JSON.parse(body)); } catch (_) { finish(null); } });
+      });
+      req.on('error', () => finish(null));
+      req.on('timeout', () => { req.destroy(); finish(null); });
+    } catch (_) { finish(null); }
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Single instance: a couples app has no business running twice at once —
@@ -656,6 +698,29 @@ function initAutoUpdater() {
   const check = () => autoUpdater.checkForUpdates().catch(() => {});
   setTimeout(check, 10000);
   setInterval(check, 4 * 60 * 60 * 1000);
+
+  // Alongside the yml-based check, poll the release manifest for the CRITICAL
+  // flag + feature list and drive the overlay from it. Runs on launch and
+  // every 4h. checkForUpdates() above still primes electron-updater so the
+  // Windows "Update" button can differential-download; on mac the button just
+  // opens the download page (unsigned builds can't self-install).
+  const checkReleaseInfo = () => fetchReleaseInfo().then((info) => {
+    if (!info || !info.version) return;
+    const current = app.getVersion();
+    if (compareVersions(info.version, current) <= 0) return; // already current
+    const critical = info.critical === true ||
+      (info.minSupported && compareVersions(current, info.minSupported) < 0);
+    sendUpdate({
+      state: 'available',
+      version: info.version,
+      critical: !!critical,
+      title: info.title || 'A new version is available',
+      features: Array.isArray(info.features) ? info.features.slice(0, 6) : [],
+      canInstall: process.platform !== 'darwin'
+    });
+  });
+  setTimeout(checkReleaseInfo, 3000);
+  setInterval(checkReleaseInfo, 4 * 60 * 60 * 1000);
 }
 
 ipcMain.handle('update-check', () => {

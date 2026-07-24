@@ -1,0 +1,11 @@
+{
+  "version": "1.0.7",
+  "critical": false,
+  "minSupported": "1.0.0",
+  "title": "What's new",
+  "features": [
+    "Corners for friends and families — up to 8 people, not just couples",
+    "Sign in with email, now alongside Google",
+    "A clearer dashboard that shows whose space is whose"
+  ]
+}

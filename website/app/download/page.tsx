@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { APP_VERSION, WIN_VERSION, DL_MAC_ARM, DL_MAC_INTEL, DL_WIN } from "../downloads";
 
+export const metadata = {
+  title: 'Download for macOS & Windows',
+  description: 'Download Our Cosy Corner free for macOS and Windows — a private shared workspace for couples, friends and families, with live sync between everyone’s computers.',
+  alternates: { canonical: '/download' },
+};
+
 export default function DownloadPage() {
   return (
     <main className="simple-page download-page">

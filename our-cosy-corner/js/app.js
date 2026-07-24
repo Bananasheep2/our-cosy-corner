@@ -2451,27 +2451,110 @@
   // result only toasts when someone actually went looking for it — a
   // background check finding nothing shouldn't interrupt anyone.
   var updateManual = false;
-  function wireUpdates() {
-    if (!(window.cosyBridge && window.cosyBridge.onUpdateStatus)) return;
+  // Current overlay state, so download-progress / ready events can update the
+  // card that's already open, and so we never downgrade a shown critical
+  // overlay back to dismissable.
+  var updateOverlay = { open: false, critical: false, version: null, ready: false };
+
+  function showUpdateOverlay(payload) {
     var isMac = navigator.platform.toUpperCase().indexOf('MAC') !== -1;
+    var overlay = $('#update-overlay');
+    if (!overlay) return;
+    var critical = !!payload.critical || updateOverlay.critical; // never un-force
+    updateOverlay.open = true;
+    updateOverlay.critical = critical;
+    updateOverlay.version = payload.version || updateOverlay.version;
+
+    $('#update-title').textContent = critical
+      ? 'Time for an update'
+      : 'A new version is available!';
+    $('#update-sub').textContent = critical
+      ? 'A newer version is needed to keep using Our Cosy Corner. It only takes a moment.'
+      : 'Update now to get the newest features and improvements.';
+
+    var list = $('#update-features'); list.innerHTML = '';
+    (payload.features || []).forEach(function (f) { list.appendChild(el('li', null, f)); });
+
+    var later = $('#update-later');
+    later.hidden = critical; // critical = no way out but forward
+    overlay.classList.toggle('is-critical', critical);
+
+    var btn = $('#update-now');
+    setUpdateButton(updateOverlay.ready ? 'restart' : 'update', isMac);
+
+    overlay.hidden = false;
+  }
+
+  function setUpdateButton(mode, isMac) {
+    var btn = $('#update-now'); if (!btn) return;
+    if (mode === 'downloading') { btn.textContent = 'Downloading…'; btn.disabled = true; }
+    else if (mode === 'restart') { btn.textContent = 'Restart to finish'; btn.disabled = false; }
+    else { btn.textContent = isMac ? 'Get the update' : 'Update'; btn.disabled = false; }
+  }
+
+  function hideUpdateOverlay() {
+    if (updateOverlay.critical) return; // can't dismiss a forced update
+    updateOverlay.open = false;
+    var overlay = $('#update-overlay');
+    if (overlay) overlay.hidden = true;
+  }
+
+  function wireUpdates() {
+    var isMac = navigator.platform.toUpperCase().indexOf('MAC') !== -1;
+    var overlay = $('#update-overlay');
+
+    // Overlay controls (wired even without the bridge so the test hook works).
+    if (overlay) {
+      $('#update-now').addEventListener('click', function () {
+        if (updateOverlay.ready) { // downloaded already → install & restart
+          if (window.cosyBridge && window.cosyBridge.updateInstall) window.cosyBridge.updateInstall();
+          return;
+        }
+        if (!(window.cosyBridge && window.cosyBridge.updateGet)) return;
+        window.cosyBridge.updateGet().then(function (r) {
+          if (r && r.mode === 'browser') {
+            // mac: opened the download page — the app can't self-install unsigned
+            $('#update-sub').textContent = 'Opened the download page in your browser — install the new version from there, then reopen Our Cosy Corner.';
+          } else {
+            setUpdateButton('downloading', isMac);
+            $('#update-progress').hidden = false;
+          }
+        });
+      });
+      $('#update-later').addEventListener('click', hideUpdateOverlay);
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) hideUpdateOverlay(); // backdrop click (non-critical only)
+      });
+    }
+
+    if (!(window.cosyBridge && window.cosyBridge.onUpdateStatus)) return;
     window.cosyBridge.onUpdateStatus(function (payload) {
       if (!payload) return;
       if (payload.state === 'available') {
-        toast('a little update is ready (v' + payload.version + ')', {
-          actionLabel: isMac ? 'get it' : 'install',
-          duration: 15000,
-          onAction: function () {
-            window.cosyBridge.updateGet().then(function (r) {
-              if (r && r.mode === 'download') toast('downloading the update… ⏳');
-            });
-          }
-        });
+        // The release-info payload carries features/critical and is the real
+        // overlay trigger; a bare yml 'available' (no features) still opens a
+        // plain overlay so the user is always told, just without the list.
+        showUpdateOverlay(payload);
+      } else if (payload.state === 'downloading') {
+        if (!updateOverlay.open) return;
+        $('#update-progress').hidden = false;
+        var pct = Math.max(0, Math.min(100, payload.percent || 0));
+        $('#update-bar-fill').style.width = pct + '%';
+        $('#update-progress-label').textContent = 'Downloading… ' + pct + '%';
+        setUpdateButton('downloading', isMac);
       } else if (payload.state === 'ready') {
-        toast('update downloaded, it installs when you quit — or', {
-          actionLabel: 'restart now',
-          duration: 30000,
-          onAction: function () { window.cosyBridge.updateInstall(); }
-        });
+        updateOverlay.ready = true;
+        if (updateOverlay.open) {
+          $('#update-progress').hidden = false;
+          $('#update-bar-fill').style.width = '100%';
+          $('#update-progress-label').textContent = 'Ready to install';
+          setUpdateButton('restart', isMac);
+        } else {
+          toast('update downloaded, it installs when you quit — or', {
+            actionLabel: 'restart now', duration: 30000,
+            onAction: function () { window.cosyBridge.updateInstall(); }
+          });
+        }
       } else if (payload.state === 'none') {
         if (updateManual) toast('you\'re already on the newest version');
         updateManual = false;
@@ -2481,6 +2564,10 @@
       }
     });
   }
+
+  // Test hook (like window.__cosy) so a headless harness can preview both
+  // overlay modes without a real update in flight. Never called at runtime.
+  window.CosyUpdateUI = { show: showUpdateOverlay, hide: function () { updateOverlay.critical = false; hideUpdateOverlay(); } };
 
   // -------------------------------------------------------------------------
   //  Routing

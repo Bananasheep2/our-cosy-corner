@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+export const metadata = {
+  title: 'Email confirmed',
+  description: 'Your email is confirmed — head back to Our Cosy Corner and sign in.',
+  alternates: { canonical: '/confirmed' },
+};
+
 export default function ConfirmedPage() {
   return (
     <main className="simple-page auth-page">

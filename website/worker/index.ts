@@ -30,6 +30,14 @@ const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    // Force HTTPS. Without this, http:// served a 200 alongside https://, so
+    // Google indexed a duplicate http:// URL (the "second site" in search) and
+    // split ranking/crawl budget across the two. Redirect before anything else.
+    if (url.protocol === "http:") {
+      url.protocol = "https:";
+      return Response.redirect(url.toString(), 301);
+    }
+
     if (url.hostname === "www.ourcosycorner.com") {
       url.hostname = "ourcosycorner.com";
       return Response.redirect(url.toString(), 308);

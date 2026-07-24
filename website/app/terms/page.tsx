@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+export const metadata = {
+  title: 'Terms of Use',
+  description: 'The terms for using Our Cosy Corner, kept plain.',
+  alternates: { canonical: '/terms' },
+};
+
 export default function TermsPage() {
   return (
     <main className="simple-page legal-page">
