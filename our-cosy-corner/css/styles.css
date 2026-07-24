@@ -183,7 +183,15 @@ input, textarea, select { font-family: inherit; color: inherit; }
 .auth-submit[data-pending="1"] { opacity: .7; }
 
 .auth-note { margin: 14px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); text-align: center; }
-.auth-note.success { color: var(--accent); font-weight: 600; }
+/* "Check your inbox…" IS the next step, so it reads as a panel rather than
+   fine print — the old 12.5px muted line was easy to miss entirely. Ink on
+   accent-soft (not accent) keeps it legible in all seven themes, including
+   Velvet Night where both tones invert. */
+.auth-note.success {
+  color: var(--ink); font-weight: 600; font-size: 15px; line-height: 1.5;
+  background: var(--panel-2); border: 1.5px solid var(--accent);
+  border-radius: calc(var(--radius) * .7); padding: 14px 16px; margin-top: 16px;
+}
 .auth-note.error { color: #c0392b; }
 
 @media (prefers-reduced-motion: reduce) {

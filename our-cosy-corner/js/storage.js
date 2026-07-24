@@ -854,6 +854,26 @@
     var client = window.supabase.createClient(cfg.url, cfg.anonKey, {
       auth: { persistSession: true, autoRefreshToken: true, flowType: 'pkce', detectSessionInUrl: false }
     });
+
+    // A second, implicit-grant client used ONLY by resetPassword() — see the
+    // comment there for why PKCE can't work for a flow that finishes in the
+    // user's browser. Built lazily so it costs nothing unless someone actually
+    // forgets their password. persistSession:false + its own storageKey keep
+    // it completely out of the main client's session storage.
+    var _recoveryClient = null;
+    function recoveryClient() {
+      if (!_recoveryClient) {
+        _recoveryClient = window.supabase.createClient(cfg.url, cfg.anonKey, {
+          auth: {
+            persistSession: false, autoRefreshToken: false,
+            flowType: 'implicit', detectSessionInUrl: false,
+            storageKey: 'cosy-recovery'
+          }
+        });
+      }
+      return _recoveryClient;
+    }
+
     var KEY_MYSPACE = 'cosy.mySpaceId';
 
     // Last known session user, kept in sync by onAuth's listener so
@@ -1152,8 +1172,18 @@
         return client.auth.signInWithPassword({ email: email, password: password })
           .then(function (res) { if (res.error) throw res.error; return res.data; });
       },
+      // Password recovery is the ONE flow that deliberately finishes in a
+      // different client: we send the mail from here, but the user opens the
+      // link in their browser. That makes PKCE actively wrong for it — PKCE
+      // keeps a code_verifier in *this* app's storage and hands back
+      // `?code=...`, which the browser has no way to exchange, so every reset
+      // link landed on the site as "invalid or expired". recoveryClient() uses
+      // the implicit grant instead, so Supabase puts the recovery token
+      // straight into the link's #fragment for /reset to read. The main client
+      // stays PKCE — the OAuth loopback in main.js depends on it.
       resetPassword: function (email) {
-        return client.auth.resetPasswordForEmail(email, { redirectTo: 'https://ourcosycorner.com/reset' })
+        return recoveryClient().auth
+          .resetPasswordForEmail(email, { redirectTo: 'https://ourcosycorner.com/reset' })
           .then(function (res) { if (res.error) throw res.error; return true; });
       },
 

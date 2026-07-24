@@ -1,8 +1,7 @@
 # Our Cosy Corner — Marketing Brief
 
 A factual, specific rundown for a marketing/publicity agent. Everything here is
-true of the shipped product as of version **1.0.5 (macOS)** / **1.0.2 (Windows,
-update in progress)**, July 2026. A "Do not claim" section at the end lists
+true of the shipped product as of version **1.0.5 (macOS)** / **1.0.5 (Windows)**, July 2026. A "Do not claim" section at the end lists
 things that are *not* true — respect it, because overclaiming on privacy or
 platforms will backfire.
 
@@ -133,10 +132,9 @@ Two ways in:
 
 - **Website / download:** https://ourcosycorner.com  (download page at /download)
 - **macOS:** Apple Silicon (M1+) and Intel builds, version **1.0.5**. ~120 MB .dmg.
-- **Windows:** 10/11, currently version **1.0.2**; the 1.0.5 update is being built.
-  Until then Windows lacks the category system and email sign-in — **don't promote
-  those two features to Windows users yet.**
-- **Price:** **Free.** No paid tier exists. No ads.
+- **Windows:** 10/11,  version **1.0.5**
+  
+- **Price:** **Free.** No paid tier exists yet. No ads.
 
 ## 9. Privacy & security model (state this carefully)
 
@@ -189,8 +187,7 @@ angles.
 
 ## 14. Current status & honest limitations (hand these off too)
 
-- **Windows is behind** (1.0.2 vs macOS 1.0.5) until the new build ships — no
-  categories, no email sign-in on Windows yet.
+
 - **Not notarised by Apple / not signed with a paid Windows certificate**, so
   first launch shows a Gatekeeper / SmartScreen "unrecognised app" warning. The
   download page explains the "Open Anyway" / "More info → Run anyway" steps. Be
@@ -206,7 +203,8 @@ angles.
   security, but the provider can technically access stored data — never say E2EE.)
 - ❌ A mobile app, iOS/Android, or a browser-based version.
 - ❌ Paid plans, teams, or unlimited group sizes.
-- ❌ Category features or email sign-in **on Windows** until 1.0.5 ships there.
+- ❌ Anything version-specific without checking /download first — macOS and
+  Windows now ship together, but that's worth re-confirming before a campaign.
 - ❌ "Signed/verified by Apple/Microsoft."
 - ❌ Any specific user counts, testimonials, or ratings unless given real ones.
 - ❌ Hearts / romantic framing — the product deliberately moved away from it.

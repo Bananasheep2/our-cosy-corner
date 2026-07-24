@@ -18,6 +18,43 @@ function parseAccessToken(hash: string): string | null {
   return params.get("access_token");
 }
 
+// Supabase can report a failure in either the fragment or the query string
+// (expired link, already-used link, redirect not allow-listed…). Showing its
+// real wording beats a blanket "invalid or expired", which previously hid the
+// actual cause and made a working link look broken.
+function parseLinkError(hash: string, search: string): string | null {
+  const fromHash = new URLSearchParams(hash.startsWith("#") ? hash.slice(1) : hash);
+  const fromQuery = new URLSearchParams(search);
+  for (const p of [fromHash, fromQuery]) {
+    const desc = p.get("error_description") || p.get("error");
+    if (desc) return desc.replace(/\+/g, " ");
+  }
+  // A PKCE-style link: the code can only be exchanged by the client that
+  // started the flow, which is the desktop app, not this browser.
+  if (fromQuery.get("code")) {
+    return "This link was created by an older version of the app. Please update Our Cosy Corner and request a new reset link.";
+  }
+  return null;
+}
+
+// Newer Supabase email templates can link with `?token_hash=...&type=recovery`
+// instead of putting the session in the fragment. Trading that hash for a real
+// access token keeps both link shapes working.
+async function verifyTokenHash(tokenHash: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "recovery", token_hash: tokenHash }),
+    });
+    if (!res.ok) return null;
+    const data: { access_token?: string } = await res.json();
+    return data.access_token || null;
+  } catch {
+    return null;
+  }
+}
+
 function validatePassword(v: string): string | null {
   if (v.length < 8) return "Password needs to be at least 8 characters.";
   return null;
@@ -41,6 +78,8 @@ export default function ResetPage() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
+  // Supabase's own wording for a bad link, when it gives us one.
+  const [linkErrorMessage, setLinkErrorMessage] = useState<string | null>(null);
 
   // setStage: updates only the `stage` half of the combined state (declared
   // as one useState so the initial-mount effect below only ever needs one
@@ -59,8 +98,34 @@ export default function ResetPage() {
     // lint rule is meant to allow, not the cascading-render pattern it warns
     // against.
     const token = parseAccessToken(window.location.hash);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see comment above
-    setTokenState(token ? { stage: "form", accessToken: token } : { stage: "invalid", accessToken: null });
+    if (token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- see comment above
+      setTokenState({ stage: "form", accessToken: token });
+      return;
+    }
+
+    const linkError = parseLinkError(window.location.hash, window.location.search);
+    if (linkError) {
+      setLinkErrorMessage(linkError);
+      setTokenState({ stage: "invalid", accessToken: null });
+      return;
+    }
+
+    // No token and no error yet: it may be a `?token_hash=` style link, which
+    // needs one round-trip to exchange. Anything else really is invalid.
+    const tokenHash = new URLSearchParams(window.location.search).get("token_hash");
+    if (!tokenHash) {
+      setTokenState({ stage: "invalid", accessToken: null });
+      return;
+    }
+    let cancelled = false;
+    verifyTokenHash(tokenHash).then((exchanged) => {
+      if (cancelled) return;
+      setTokenState(exchanged
+        ? { stage: "form", accessToken: exchanged }
+        : { stage: "invalid", accessToken: null });
+    });
+    return () => { cancelled = true; };
   }, []);
 
   function onPasswordBlur() {
@@ -136,7 +201,7 @@ export default function ResetPage() {
 
         {stage === "invalid" && (
           <p className="auth-result is-error">
-            This reset link is invalid or has expired. Request a new one from the app.
+            {linkErrorMessage || "This reset link is invalid or has expired. Request a new one from the app."}
           </p>
         )}
 
