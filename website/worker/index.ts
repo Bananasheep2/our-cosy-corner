@@ -30,10 +30,13 @@ const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    // Force HTTPS. Without this, http:// served a 200 alongside https://, so
-    // Google indexed a duplicate http:// URL (the "second site" in search) and
-    // split ranking/crawl budget across the two. Redirect before anything else.
-    if (url.protocol === "http:") {
+    // Force HTTPS on the real domain. Without this, http:// served a 200
+    // alongside https://, so Google indexed a duplicate http:// URL (the
+    // "second site" in search). Excludes localhost/127.0.0.1 so `vinext dev`
+    // and the local test harness (which serve plain http) still work.
+    const isLocal = url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1" || url.hostname === "0.0.0.0";
+    if (url.protocol === "http:" && !isLocal) {
       url.protocol = "https:";
       return Response.redirect(url.toString(), 301);
     }
