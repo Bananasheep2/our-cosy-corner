@@ -1405,6 +1405,12 @@
 
   function renderSidebar() {
     var root = $('#page-tree'); if (!root) return;
+    // Same deferral principle the block list uses (see nodeHasFocus): a
+    // snapshot must never yank the node someone is actively typing in. An
+    // open inline rename holds focus, and its commit/Escape path always
+    // triggers another render, so skipping here can't leave the tree stale.
+    var renaming = root.querySelector('.page-row-rename-input');
+    if (renaming && document.activeElement === renaming) return;
     root.innerHTML = '';
     var hidden = computeHiddenIds();
     function buildLevel(parentId, depth, zone) {
@@ -1461,7 +1467,27 @@
     row.appendChild(icon);
 
     var title = el('span', 'page-row-title', sidebarLabelFor(page, zone));
-    title.addEventListener('dblclick', function (e) { e.stopPropagation(); startInlineRename(title, page); });
+    // Double-click on the title opens the inline rename — but the row's own
+    // click handler navigates, and navigateTo() rebuilds the whole tree, so
+    // the click half of a double-click would rip this very span (and the
+    // input that replaces it) out of the DOM before dblclick ever lands.
+    // Clicks ON THE TITLE therefore defer navigation just long enough for a
+    // second click to cancel it; anywhere else on the row still navigates
+    // instantly.
+    var titleClickTimer = null;
+    title.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (titleClickTimer) return; // second click — dblclick is about to fire
+      titleClickTimer = setTimeout(function () {
+        titleClickTimer = null;
+        navigateTo(page.id);
+      }, 220);
+    });
+    title.addEventListener('dblclick', function (e) {
+      e.stopPropagation();
+      clearTimeout(titleClickTimer); titleClickTimer = null;
+      startInlineRename(title, page);
+    });
     row.appendChild(title);
 
     if (pageHasUnread(page.id)) row.appendChild(el('span', 'unread-dot'));
@@ -2315,7 +2341,14 @@
     closePopovers();
     var panel = $('#theme-panel');
     panel.hidden = false;
-    var current = (state.space && state.space.theme) || { preset: 'parchment' };
+    // Must match onSpace()'s fallback exactly. A corner that has never had a
+    // theme chosen renders its CATEGORY's preset (cherry-blossom / clear-
+    // harbour / evergreen), not parchment — defaulting to parchment here
+    // highlighted the wrong swatch and, worse, seeded the customiser from
+    // parchment's palette, so nudging any control silently repainted the
+    // whole corner in a theme nobody picked.
+    var current = (state.space && state.space.theme) ||
+      { preset: currentCategory().theme };
 
     var grid = $('#theme-presets'); grid.innerHTML = '';
     Object.keys(window.CosyThemes.PRESETS).forEach(function (key) {

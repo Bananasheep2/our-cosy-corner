@@ -1,9 +1,9 @@
 # Our Cosy Corner — Marketing Brief
 
 A factual, specific rundown for a marketing/publicity agent. Everything here is
-true of the shipped product as of version **1.0.5 (macOS)** / **1.0.5 (Windows)**, July 2026. A "Do not claim" section at the end lists
-things that are *not* true — respect it, because overclaiming on privacy or
-platforms will backfire.
+true of the shipped product as of version **1.0.7** (macOS and Windows, in sync),
+July 2026. A "Do not claim" section at the end lists things that are *not* true —
+respect it, because overclaiming on privacy or platforms will backfire.
 
 > **What changed in 1.0.5 (important — the product just widened):** Our Cosy
 > Corner is no longer couples-only. A corner can now be a **couple, a group of
@@ -119,7 +119,11 @@ re-customisable afterwards.
   and cloud sync is automatic once you're signed in.
 - **JSON export + restore** — your data is portable and you can back it up.
 - **Delete-account** support.
-- **Auto-update:** Windows updates itself in place; macOS notifies you.
+- **Auto-update:** the app checks for new versions on launch and shows a friendly
+  "what's new" prompt listing the actual new features. On Windows it updates
+  itself in place, downloading only the changed parts (not the whole app); on
+  macOS it points you to the latest download. Important releases can be marked
+  as required.
 
 ## 7. Signing in (new)
 
@@ -131,9 +135,8 @@ Two ways in:
 ## 8. Platforms, pricing, how to get it
 
 - **Website / download:** https://ourcosycorner.com  (download page at /download)
-- **macOS:** Apple Silicon (M1+) and Intel builds, version **1.0.5**. ~120 MB .dmg.
-- **Windows:** 10/11,  version **1.0.5**
-  
+- **macOS:** Apple Silicon (M1+) and Intel builds, version **1.0.7**. ~120 MB .dmg.
+- **Windows:** 10/11, version **1.0.7**. ~96 MB installer.
 - **Price:** **Free.** No paid tier exists yet. No ads.
 
 ## 9. Privacy & security model (state this carefully)

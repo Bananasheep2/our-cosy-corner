@@ -22,6 +22,13 @@ const https = require('https');
 
 let mainWindow = null;
 
+// True once something has asked the whole app to quit (Cmd+Q, the app menu,
+// electron-updater's quitAndInstall). The window's close handler below has
+// to preventDefault to buy the renderer a moment to flush, which cancels
+// that quit — this flag is what lets it be resumed afterwards.
+let quitRequested = false;
+app.on('before-quit', () => { quitRequested = true; });
+
 // Where mac users are sent to grab a new version by hand — keep in sync with
 // the download page on the site, since mac can't self-install while unsigned
 // (see initAutoUpdater below).
@@ -172,6 +179,12 @@ function createWindow() {
   // debounced saves / the focused editor there. Give it a short, bounded
   // moment to do that before the window (and its process) actually goes
   // away, instead of tearing it down instantly on the first close click.
+  //
+  // Cancelling the close ALSO cancels whatever quit triggered it (Cmd+Q,
+  // quitAndInstall). On macOS window-all-closed deliberately doesn't quit,
+  // so without resuming the quit ourselves the app would sit in the dock
+  // with no window — still holding the single-instance lock. So: remember
+  // whether a quit was in flight, and finish it once the flush window is up.
   let flushGiven = false;
   mainWindow.on('close', (event) => {
     if (!flushGiven && mainWindow && !mainWindow.webContents.isDestroyed()) {
@@ -179,6 +192,7 @@ function createWindow() {
       event.preventDefault();
       setTimeout(() => {
         if (mainWindow) mainWindow.destroy();
+        if (quitRequested) app.quit();
       }, 200);
     }
   });

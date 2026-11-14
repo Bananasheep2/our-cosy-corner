@@ -6,7 +6,7 @@ const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-const OUT = '/private/tmp/claude-501/-Users-xinyi-Desktop-bananacolesaw-app/47e86193-84eb-4795-ae9c-500b25e2b61d/scratchpad/gif-frames';
+const OUT = require('path').join(require('os').tmpdir(), 'cosy-shots', 'gif-frames');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 

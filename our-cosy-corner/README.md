@@ -9,6 +9,11 @@ It works **completely offline out of the box** (everything saved on your Mac),
 and can optionally sync live between two Macs when you connect a free Supabase
 project.
 
+> **Project status:** no longer maintained. The hosted sync backend has been
+> retired, so the app runs in local mode by default. To try cloud sync, point
+> `supabase-config.js` at your own free Supabase project using
+> **[SETUP.md](SETUP.md)**.
+
 ---
 
 ## Run it

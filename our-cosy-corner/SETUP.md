@@ -167,7 +167,7 @@ begin
     from pg_proc p
     join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
-      and p.proname in ('is_space_member', 'touch_updated_at',
+      and p.proname in ('is_space_member', 'can_see_page', 'touch_updated_at',
                         'protect_space_membership', 'join_space',
                         'set_member_profile', 'reorder_blocks',
                         'remove_member', 'delete_account')
@@ -182,6 +182,26 @@ end $$;
 create function is_space_member(sid uuid) returns boolean
 language sql security definer stable as $$
   select auth.uid() = any(members) from spaces where id = sid;
+$$;
+
+-- Is this page visible to the caller? A page the app calls "private" is a
+-- kind='page' row whose owner_uid is a specific member's uid (the visibility
+-- toggle in the page header sets it; 'shared' / null mean everyone). app.js
+-- already filters other people's private pages out of the sidebar — but
+-- filtering client-side only hides them, it still SENDS them, so a member
+-- could read a partner's private pages straight off the REST API. This is
+-- what actually withholds the row. 'home'/'personal' pages are structural
+-- (every member needs to see that they exist) and are never private.
+-- SECURITY DEFINER so the blocks policy can consult it without recursing
+-- back through pages' own RLS.
+create function can_see_page(pid uuid) returns boolean
+language sql security definer stable as $$
+  select is_space_member(p.space_id)
+     and (p.kind <> 'page'
+          or p.owner_uid is null
+          or p.owner_uid = 'shared'
+          or p.owner_uid = auth.uid()::text)
+    from pages p where p.id = pid;
 $$;
 
 -- Auto-bumps updated_at on every UPDATE to pages/blocks. storage.js ALSO
@@ -491,12 +511,28 @@ create policy "create invite as member" on invites for insert
   with check (is_space_member(space_id));
 
 alter table pages enable row level security;
+-- Membership AND page-level privacy (see can_see_page above): a member of
+-- the corner still cannot read — or write to — another member's private
+-- page. Without the second clause the "private / hidden from everyone else"
+-- toggle in the page header was purely cosmetic, enforced only by app.js.
 create policy "pages by member" on pages for all
-  using (is_space_member(space_id)) with check (is_space_member(space_id));
+  using (
+    is_space_member(space_id)
+    and (kind <> 'page' or owner_uid is null or owner_uid = 'shared'
+         or owner_uid = auth.uid()::text)
+  )
+  with check (
+    is_space_member(space_id)
+    and (kind <> 'page' or owner_uid is null or owner_uid = 'shared'
+         or owner_uid = auth.uid()::text)
+  );
 
 alter table blocks enable row level security;
+-- A block inherits its page's privacy — otherwise the page row would be
+-- hidden while everything written on it stayed readable.
 create policy "blocks by member" on blocks for all
-  using (is_space_member(space_id)) with check (is_space_member(space_id));
+  using (is_space_member(space_id) and can_see_page(page_id))
+  with check (is_space_member(space_id) and can_see_page(page_id));
 
 alter table files enable row level security;
 create policy "files by member" on files for all

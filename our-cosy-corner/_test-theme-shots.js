@@ -8,7 +8,8 @@ const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-const OUT = '/private/tmp/claude-501/-Users-xinyi-Desktop-bananacolesaw-app/47e86193-84eb-4795-ae9c-500b25e2b61d/scratchpad';
+const OUT = require('path').join(require('os').tmpdir(), 'cosy-shots');
+fs.mkdirSync(OUT, { recursive: true });
 const SITE = path.join(__dirname, 'website', 'screenshots');
 const THEMES = ['parchment', 'peach-blossom', 'cherry-blossom', 'evergreen', 'frosted-petal', 'clear-harbour', 'velvet-night'];
 const SITE_THEMES = { 'parchment': 'board-parchment.png', 'peach-blossom': 'board-peach-blossom.png', 'cherry-blossom': 'board-cherry-blossom.png', 'velvet-night': 'board-velvet-night.png' };

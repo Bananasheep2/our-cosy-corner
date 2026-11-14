@@ -542,8 +542,7 @@
     styleSel.value = 'P';
     styleSel.addEventListener('mousedown', function (e) { e.stopPropagation(); });
     styleSel.addEventListener('change', function () {
-      ensureFocus();
-      document.execCommand('formatBlock', false, styleSel.value);
+      formatBlockAs(styleSel.value);
       saveActive();
       if (activeEditable) activeEditable.focus();
     });
@@ -563,11 +562,11 @@
 
     bar.appendChild(makeBtn('•≡', 'Bullet list', function () { cmd('insertUnorderedList'); }));
     bar.appendChild(makeBtn('1.≡', 'Numbered list', function () { cmd('insertOrderedList'); }));
-    bar.appendChild(makeIconBtn(ICON_QUOTE, 'Blockquote', function () { document.execCommand('formatBlock', false, 'BLOCKQUOTE'); }));
+    bar.appendChild(makeIconBtn(ICON_QUOTE, 'Blockquote', function () { formatBlockAs('BLOCKQUOTE'); }));
     bar.appendChild(makeSep());
 
     bar.appendChild(makeBtn('</>', 'Inline code', function () { wrapSelectionInTag('code'); }));
-    bar.appendChild(makeBtn('{ }', 'Code block', function () { document.execCommand('formatBlock', false, 'PRE'); }));
+    bar.appendChild(makeBtn('{ }', 'Code block', function () { formatBlockAs('PRE'); }));
     bar.appendChild(makeSep());
 
     bar.appendChild(makeBtn('⟸', 'Align left', function () { cmd('justifyLeft'); }));
@@ -643,6 +642,47 @@
     pre.setEnd(range.startContainer, range.startOffset);
     return pre.toString();
   }
+  // Chromium's execCommand('formatBlock') is a silent no-op when the caret
+  // sits directly inside the editing host with no block-level wrapper around
+  // it — which is exactly the state a brand-new (empty) text block is in, and
+  // exactly what removeLinePrefix() leaves behind after eating a "# ". The
+  // result was that "# ", "## ", "### ", "> " and "```" swallowed the prefix
+  // and produced no heading/quote/code block at all (the list shortcuts
+  // worked only because insertUnorderedList builds its own wrapper). So:
+  // give formatBlock a block to actually format first.
+  function ensureBlockWrapper(ed) {
+    if (!ed) return;
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    var range = sel.getRangeAt(0);
+    var startNode = range.startContainer, startOffset = range.startOffset;
+    var line = currentLineNode(ed, startNode);
+    if (line && line !== ed && line.nodeType === 1) return; // already in a block
+    var div = document.createElement('div');
+    if (line && line !== ed) {
+      ed.insertBefore(div, line);
+      div.appendChild(line); // wrap a bare text-node line, caret and all
+    } else {
+      div.appendChild(document.createElement('br'));
+      ed.appendChild(div);
+      startNode = div; startOffset = 0;
+    }
+    var fresh = document.createRange();
+    fresh.setStart(startNode, startOffset);
+    fresh.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(fresh);
+  }
+  // The one way this file ever runs formatBlock — toolbar buttons, the
+  // paragraph-style dropdown, and the markdown shortcuts all go through here
+  // so none of them can regress back to the bare-caret no-op above.
+  function formatBlockAs(tag, ed) {
+    ed = ed || activeEditable;
+    ensureFocus();
+    ensureBlockWrapper(ed);
+    document.execCommand('formatBlock', false, tag);
+  }
+
   // Deletes the `n` characters immediately before the caret using the Range
   // API directly (the shortcut trigger characters the person just typed).
   function removeLinePrefix(ed, n) {
@@ -667,16 +707,16 @@
     while (remaining > 0 && document.execCommand('delete', false, null)) remaining--;
   }
   var MD_SPACE_RULES = [
-    { re: /^#$/, run: function (ed) { document.execCommand('formatBlock', false, 'H1'); } },
-    { re: /^##$/, run: function (ed) { document.execCommand('formatBlock', false, 'H2'); } },
-    { re: /^###$/, run: function (ed) { document.execCommand('formatBlock', false, 'H3'); } },
+    { re: /^#$/, run: function (ed) { formatBlockAs('H1', ed); } },
+    { re: /^##$/, run: function (ed) { formatBlockAs('H2', ed); } },
+    { re: /^###$/, run: function (ed) { formatBlockAs('H3', ed); } },
     { re: /^[-*]$/, run: function (ed) { document.execCommand('insertUnorderedList'); } },
     { re: /^\d+\.$/, run: function (ed) { document.execCommand('insertOrderedList'); } },
-    { re: /^>$/, run: function (ed) { document.execCommand('formatBlock', false, 'BLOCKQUOTE'); } }
+    { re: /^>$/, run: function (ed) { formatBlockAs('BLOCKQUOTE', ed); } }
   ];
   var MD_ENTER_RULES = [
     { re: /^-{3,}$/, run: function (ed) { document.execCommand('insertHorizontalRule'); } },
-    { re: /^```$/, run: function (ed) { document.execCommand('formatBlock', false, 'PRE'); } }
+    { re: /^```$/, run: function (ed) { formatBlockAs('PRE', ed); } }
   ];
   function handleMarkdownShortcut(e, ed) {
     if (e.key === ' ') {

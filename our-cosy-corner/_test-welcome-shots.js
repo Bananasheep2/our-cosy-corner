@@ -3,7 +3,8 @@
 const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
-const OUT = '/private/tmp/claude-501/-Users-xinyi-Desktop-bananacolesaw-app/47e86193-84eb-4795-ae9c-500b25e2b61d/scratchpad';
+const OUT = require('path').join(require('os').tmpdir(), 'cosy-shots');
+fs.mkdirSync(OUT, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const src = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
